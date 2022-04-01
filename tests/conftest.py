@@ -1,10 +1,15 @@
-"""
-    Dummy conftest.py for template_agent.
+"""Pytest fixture for the Zap agent."""
+import pytest
 
-    If you don't know what this is for, just leave it empty.
-    Read more about conftest.py under:
-    - https://docs.pytest.org/en/stable/fixture.html
-    - https://docs.pytest.org/en/stable/writing_plugins.html
-"""
+from ostorlab.agent import message
 
-# import pytest
+
+@pytest.fixture
+def scan_message():
+    """Creates a dummy message of type v3.asset.domain_name to be used by the agent for testing purposes.
+    """
+    selector = 'v3.asset.domain_name'
+    msg_data = {
+            'name': 'test.ostorlab.co',
+        }
+    return message.Message.from_data(selector, data=msg_data)
