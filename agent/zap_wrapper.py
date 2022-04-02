@@ -25,7 +25,7 @@ class ZapWrapper:
         Args:
             scan_profile: Scan profile from one of these values (baseline, api and full).
         """
-        if scan_profile not in PROFILE_SCRIPT.keys():
+        if scan_profile not in PROFILE_SCRIPT:
             raise ValueError()
         self._scan_profile = scan_profile
 
@@ -41,7 +41,7 @@ class ZapWrapper:
         with tempfile.NamedTemporaryFile(dir='/zap/wrk', suffix='.json') as t:
             command = self._prepare_command(target, pathlib.Path(t.name).name)
             logger.info('running command %s', command)
-            subprocess.run(command)
+            subprocess.run(command, check=False)
             return json.load(t)
 
     def _prepare_command(self, url: str, output) -> List[str]:

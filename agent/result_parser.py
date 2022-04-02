@@ -3,7 +3,6 @@ import dataclasses
 from typing import Dict
 
 from markdownify import markdownify as md
-from ostorlab.agent import kb
 from ostorlab.agent.kb import kb
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 
@@ -31,7 +30,7 @@ def _map_risk_rating(risk: int, confidence: int) -> vuln_mixin.RiskRating:
 
 
 def _build_technical_detail(target, header, method, uri, param, attack, evidence) -> str:
-    return f'''{header}
+    return f"""{header}
 
 * Target: {target}
 
@@ -41,7 +40,7 @@ def _build_technical_detail(target, header, method, uri, param, attack, evidence
 {attack}
 {evidence}
 ```
-    '''
+    """
 
 
 @dataclasses.dataclass
