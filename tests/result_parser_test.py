@@ -23,48 +23,48 @@ def testParseResults_always_yieldsValidVulnerabilities():
                                'http://cwe.mitre.org/data/definitions/352.html':
                                    'http://cwe.mitre.org/data/definitions/352.html',
                                'cwe-352': 'https://nvd.nist.gov/vuln/detail/352.html'},
-                           short_description="No Anti-CSRF tokens were found in a HTML submission form.\n"
-                                             "\nA cross-site request forgery is an attack that involves forcing a"
-                                             " victim to send an HTTP request to a target destination without their"
-                                             " knowledge or intent in order to perform an action as the victim. The"
-                                             " underlying cause is application functionality using predictable URL/form"
-                                             " actions in a repeatable way. The nature of the attack is that CSRF"
-                                             " exploits the trust that a web site has for a user. By contrast,"
-                                             " cross-site scripting (XSS) exploits the trust that a user has for"
-                                             " a web site. Like XSS, CSRF attacks are not necessarily cross-site,"
-                                             " but they can be. Cross-site request forgery is also known as CSRF"
-                                             ", XSRF, one-click attack, session riding, confused deputy, and sea"
-                                             " surf.\n\nCSRF attacks are effective in a number of situations,"
-                                             " including:\n\n * The victim has an active session on the target site."
-                                             "\n\n * The victim is authenticated via HTTP auth on the target site."
-                                             "\n\n * The victim is on the same local network as the target site.\n\n"
-                                             "CSRF has primarily been used to perform an action against a target site"
-                                             " using the victim's privileges, but recent techniques have been"
-                                             " discovered to disclose information by gaining access to the response."
-                                             " The risk of information disclosure is dramatically increased when the"
-                                             " target site is vulnerable to XSS, because XSS can be used as a platform"
-                                             " for CSRF, allowing the attack to operate within the bounds of the"
-                                             " same-origin policy.\n\n",
-                           description="No Anti-CSRF tokens were found in a HTML submission form.\n\nA cross-site"
-                                       " request forgery is an attack that involves forcing a victim to send an"
-                                       " HTTP request to a target destination without their knowledge or intent in"
-                                       " order to perform an action as the victim. The underlying cause is application"
-                                       " functionality using predictable URL/form actions in a repeatable way. The"
-                                       " nature of the attack is that CSRF exploits the trust that a web site has for"
-                                       " a user. By contrast, cross-site scripting (XSS) exploits the trust that a"
-                                       " user has for a web site. Like XSS, CSRF attacks are not necessarily"
-                                       " cross-site, but they can be. Cross-site request forgery is also known as"
-                                       " CSRF, XSRF, one-click attack, session riding, confused deputy, and sea"
-                                       " surf.\n\nCSRF attacks are effective in a number of situations, including:"
-                                       "\n\n * The victim has an active session on the target site.\n\n * The victim"
-                                       " is authenticated via HTTP auth on the target site.\n\n * The victim is on the"
-                                       " same local network as the target site.\n\nCSRF has primarily been used to"
-                                       " perform an action against a target site using the victim's privileges, but"
-                                       " recent techniques have been discovered to disclose information by gaining"
-                                       " access to the response. The risk of information disclosure is dramatically"
-                                       " increased when the target site is vulnerable to XSS, because XSS can be used"
-                                       " as a platform for CSRF, allowing the attack to operate within the bounds of"
-                                       " the same-origin policy.\n\n",
+                           short_description='No Anti-CSRF tokens were found in a HTML submission form.\n'
+                                             '\nA cross-site request forgery is an attack that involves forcing a'
+                                             ' victim to send an HTTP request to a target destination without their'
+                                             ' knowledge or intent in order to perform an action as the victim. The'
+                                             ' underlying cause is application functionality using predictable URL/form'
+                                             ' actions in a repeatable way. The nature of the attack is that CSRF'
+                                             ' exploits the trust that a web site has for a user. By contrast,'
+                                             ' cross-site scripting (XSS) exploits the trust that a user has for'
+                                             ' a web site. Like XSS, CSRF attacks are not necessarily cross-site,'
+                                             ' but they can be. Cross-site request forgery is also known as CSRF'
+                                             ', XSRF, one-click attack, session riding, confused deputy, and sea'
+                                             ' surf.\n\nCSRF attacks are effective in a number of situations,'
+                                             ' including:\n\n * The victim has an active session on the target site.'
+                                             '\n\n * The victim is authenticated via HTTP auth on the target site.'
+                                             '\n\n * The victim is on the same local network as the target site.\n\n'
+                                             'CSRF has primarily been used to perform an action against a target site'
+                                             ' using the victim\'s privileges, but recent techniques have been'
+                                             ' discovered to disclose information by gaining access to the response.'
+                                             ' The risk of information disclosure is dramatically increased when the'
+                                             ' target site is vulnerable to XSS, because XSS can be used as a platform'
+                                             ' for CSRF, allowing the attack to operate within the bounds of the'
+                                             ' same-origin policy.\n\n',
+                           description='No Anti-CSRF tokens were found in a HTML submission form.\n\nA cross-site'
+                                       ' request forgery is an attack that involves forcing a victim to send an'
+                                       ' HTTP request to a target destination without their knowledge or intent in'
+                                       ' order to perform an action as the victim. The underlying cause is application'
+                                       ' functionality using predictable URL/form actions in a repeatable way. The'
+                                       ' nature of the attack is that CSRF exploits the trust that a web site has for'
+                                       ' a user. By contrast, cross-site scripting (XSS) exploits the trust that a'
+                                       ' user has for a web site. Like XSS, CSRF attacks are not necessarily'
+                                       ' cross-site, but they can be. Cross-site request forgery is also known as'
+                                       ' CSRF, XSRF, one-click attack, session riding, confused deputy, and sea'
+                                       ' surf.\n\nCSRF attacks are effective in a number of situations, including:'
+                                       '\n\n * The victim has an active session on the target site.\n\n * The victim'
+                                       ' is authenticated via HTTP auth on the target site.\n\n * The victim is on the'
+                                       ' same local network as the target site.\n\nCSRF has primarily been used to'
+                                       ' perform an action against a target site using the victim\'s privileges, but'
+                                       ' recent techniques have been discovered to disclose information by gaining'
+                                       ' access to the response. The risk of information disclosure is dramatically'
+                                       ' increased when the target site is vulnerable to XSS, because XSS can be used'
+                                       ' as a platform for CSRF, allowing the attack to operate within the bounds of'
+                                       ' the same-origin policy.\n\n',
                            recommendation='Phase: Architecture and Design\n\nUse a vetted library or framework that'
                                           ' does not allow this weakness to occur or provides constructs that make this'
                                           ' weakness easier to avoid.\n\nFor example, use anti-CSRF packages such as'
