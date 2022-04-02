@@ -1,3 +1,4 @@
+"""Unit tests for result parser."""
 import json
 import pathlib
 
