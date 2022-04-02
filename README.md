@@ -1,4 +1,4 @@
-<h1 align="center">Agent zap</h1>
+<h1 align="center">Agent Zap</h1>
 
 <p align="center">
 <img src="https://img.shields.io/badge/License-Apache_2.0-brightgreen.svg">
@@ -74,16 +74,7 @@ git clone https://github.com/Ostorlab/agent_zap.git && cd agent_zap
 	  ```shell
 	  ostorlab scan run --agent agent/[ORGANIZATION]/zap domain-name tesla.com
 	  ```
-
-# Debug
-
-To run zap directly, use the following command. Each mode has it own file `zap-baseline.py`, `zap-api-scan.py`
-and `zap-full-scan.py`:
-
-```shell
-docker run --rm -t -v /tmp/:/output -v /tmp/wrk:/zap/wrk/:rw owasp/zap2docker-stable zap-baseline.py -d -t https://www.google.com -j -J zap-output.json
-```
-
+ 
 ## License
 [Apache-2](./LICENSE)
 
