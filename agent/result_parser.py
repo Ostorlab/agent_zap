@@ -23,13 +23,16 @@ CONFIDENCE_MAPPING = {
 
 
 def _map_risk_rating(risk: int, confidence: int) -> vuln_mixin.RiskRating:
+    """Map Zap risk and confidence to Ostorlab's risk."""
     if CONFIDENCE_MAPPING[confidence] in ('CONFIRMED', 'HIGH'):
         return RISK_RATING_MAPPING[risk]
     else:
         return vuln_mixin.RiskRating.POTENTIALLY
 
 
-def _build_technical_detail(target, header, method, uri, param, attack, evidence) -> str:
+def _build_technical_detail(
+        target: str, header: str, method: str, uri: str, param: str, attack: str, evidence: str) -> str:
+    """Build the technical detail markdown content."""
     return f"""{header}
 
 * Target: {target}

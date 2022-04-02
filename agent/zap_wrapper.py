@@ -8,11 +8,12 @@ from typing import List, Dict
 
 logger = logging.getLogger(__name__)
 
+OUTPUT_SUFFIX = '.json'
+OUTPUT_DIR = '/zap/wrk'
 PROFILE_SCRIPT = {
     'baseline': '/zap/zap-baseline.py',
     'api': '/zap/zap-api.py',
     'full': '/zap/zap-full-scan.py',
-
 }
 
 
@@ -38,7 +39,7 @@ class ZapWrapper:
         Returns:
             JSON generated output as a dict.
         """
-        with tempfile.NamedTemporaryFile(dir='/zap/wrk', suffix='.json') as t:
+        with tempfile.NamedTemporaryFile(dir=OUTPUT_DIR, suffix=OUTPUT_SUFFIX) as t:
             command = self._prepare_command(target, pathlib.Path(t.name).name)
             logger.info('running command %s', command)
             subprocess.run(command, check=False)

@@ -13,10 +13,11 @@ from agent import zap_wrapper
 logging.basicConfig(
     format='%(message)s',
     datefmt='[%X]',
-    handlers=[rich_logging.RichHandler(rich_tracebacks=True)]
+    handlers=[rich_logging.RichHandler(rich_tracebacks=True)],
+    level='INFO',
+    force=True
 )
 logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
 
 
 class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
@@ -48,9 +49,9 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         domain_name = message.data.get('name')
         https = self.args.get('https')
         port = self.args.get('port')
-        if https and port != 443:
+        if https is True and port != 443:
             return f'https://{domain_name}:{port}'
-        elif https:
+        elif https is True:
             return f'https://{domain_name}'
         elif port == 80:
             return f'http://{domain_name}'
