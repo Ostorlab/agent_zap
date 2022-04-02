@@ -1,4 +1,4 @@
-"""Sample agent implementation"""
+"""Zap agent implementation"""
 import logging
 from rich import logging as rich_logging
 
@@ -14,12 +14,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
 
 
-class HellWorldAgent(agent.Agent):
-    """Hello world agent."""
-
-    def start(self) -> None:
-        """TODO (author): add your description here."""
-        logger.info('running start')
+class ZapAgent(agent.Agent):
+    """Zap open-source web scanner agent."""
 
     def process(self, message: m.Message) -> None:
         """TODO (author): add your description here.
@@ -38,4 +34,4 @@ class HellWorldAgent(agent.Agent):
 
 if __name__ == '__main__':
     logger.info('starting agent ...')
-    HellWorldAgent.main()
+    ZapAgent.main()

@@ -1,9 +1,10 @@
 kind: Agent
-name: template_agent # Agent name, must be unique by organisation to be published on the store.
-version: 0.0.0
-description: Agent description. # Support for Markdown format.
-in_selectors: # List of input selectors.
-  - v3.healthcheck.ping
-out_selectors: [] # List of output selectors.
-docker_file_path : Dockerfile # Dockerfile path for automated release build.
-docker_build_root : . # Docker build dir for automated release build.
+name: zap
+version: 0.0.1
+description: Zap is a popular open-source web security scanner supported by the OWASP.
+in_selectors:
+  - v3.asset.domain_name
+out_selectors:
+  - v3.report.vulnerability
+docker_file_path : Dockerfile
+docker_build_root : .
