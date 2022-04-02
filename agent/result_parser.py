@@ -70,7 +70,7 @@ def parse_results(results: Dict):
             technical_detail_header = md(alert.get('otherinfo'))
             risk_rating_id = int(alert.get('riskcode'))
             confidence_id = int(alert.get('confidence'))
-            references = {r: r for r in alert.get('reference').replace('<p>', '').split('</p>') if r is not ''}
+            references = {r: r for r in alert.get('reference').replace('<p>', '').split('</p>') if r != ''}
             cweid = alert.get('cweid')
             references[f'cwe-{cweid}'] = f'https://nvd.nist.gov/vuln/detail/{cweid}.html'
             for instance in alert.get('instances'):
