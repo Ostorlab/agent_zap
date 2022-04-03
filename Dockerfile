@@ -1,4 +1,5 @@
 FROM owasp/zap2docker-stable
+RUN mkdir -p /zap/wrk
 USER root
 COPY requirement.txt .
 RUN pip install -r requirement.txt
