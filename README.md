@@ -74,7 +74,17 @@ git clone https://github.com/Ostorlab/agent_zap.git && cd agent_zap
 	  ```shell
 	  ostorlab scan run --agent agent/[ORGANIZATION]/zap domain-name tesla.com
 	  ```
+
+
+<p align="center">
+<img src="https://github.com/Ostorlab/agent_zap/blob/main/images/zap_vulnz_list.png" alt="agent-zap-vulnz-list" />
+</p>
+
+<p align="center">
+<img src="https://github.com/Ostorlab/agent_zap/blob/main/images/zap_vulnz_describe.png" alt="agent-zap-vulnz-describe" />
+</p>
  
+
 ## License
 [Apache-2](./LICENSE)
 
