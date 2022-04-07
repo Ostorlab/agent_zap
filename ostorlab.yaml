@@ -66,6 +66,7 @@ description: |
   ## License
   [Apache-2](./LICENSE)
 
+license: Apache-2.0
 in_selectors:
   - v3.asset.domain_name
 out_selectors:
