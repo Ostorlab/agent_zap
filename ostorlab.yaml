@@ -68,6 +68,7 @@ description: |
 license: Apache-2.0
 in_selectors:
   - v3.asset.domain_name
+  - v3.asset.link
 out_selectors:
   - v3.report.vulnerability
 docker_file_path: Dockerfile
