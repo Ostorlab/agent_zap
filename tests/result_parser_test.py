@@ -2,7 +2,6 @@
 import json
 import pathlib
 
-from ostorlab.agent.kb import kb
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 
 from agent import result_parser
