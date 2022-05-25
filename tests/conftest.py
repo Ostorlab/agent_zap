@@ -1,5 +1,6 @@
 """Pytest fixture for the Zap agent."""
 import pathlib
+import random
 
 import pytest
 from ostorlab.agent import definitions as agent_definitions
@@ -21,6 +22,18 @@ def scan_message():
 
 
 @pytest.fixture
+def scan_message_link():
+    """Creates a dummy message of type v3.asset.ip.v4 to be used by the agent for testing purposes.
+    """
+    selector = 'v3.asset.link'
+    msg_data = {
+            'url': 'https://test.ostorlab.co',
+            'method': 'GET'
+        }
+    return message.Message.from_data(selector, data=msg_data)
+
+
+@pytest.fixture
 def test_agent():
     with (pathlib.Path(__file__).parent.parent / 'ostorlab.yaml').open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
@@ -29,5 +42,5 @@ def test_agent():
             bus_url='NA',
             bus_exchange_topic='NA',
             args=[],
-            healthcheck_port=5301)
+            healthcheck_port=random.randint(5000, 6000))
         return zap_agent.ZapAgent(definition, settings)

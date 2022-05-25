@@ -46,17 +46,20 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
     def _prepare_target(self, message: m.Message) -> str:
         """Prepare targets based on type, if a domain name is provided, port and protocol are collected from the config.
         """
-        domain_name = message.data.get('name')
-        https = self.args.get('https')
-        port = self.args.get('port')
-        if https is True and port != 443:
-            return f'https://{domain_name}:{port}'
-        elif https is True:
-            return f'https://{domain_name}'
-        elif port == 80:
-            return f'http://{domain_name}'
-        else:
-            return f'http://{domain_name}:{port}'
+        if message.data.get('name') is not None:
+            domain_name = message.data.get('name')
+            https = self.args.get('https')
+            port = self.args.get('port')
+            if https is True and port != 443:
+                return f'https://{domain_name}:{port}'
+            elif https is True:
+                return f'https://{domain_name}'
+            elif port == 80:
+                return f'http://{domain_name}'
+            else:
+                return f'http://{domain_name}:{port}'
+        elif message.data.get('url') is not None:
+            return message.data.get('url')
 
     def _emit_results(self, results: Dict) -> None:
         """Parses results and emits vulnerabilities."""
