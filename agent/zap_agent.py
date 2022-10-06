@@ -6,8 +6,9 @@ import re
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
-from rich import logging as rich_logging
 from ostorlab.runtimes import definitions as runtime_definitions
+
+from rich import logging as rich_logging
 
 from agent import result_parser
 from agent import zap_wrapper
