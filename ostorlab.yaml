@@ -93,5 +93,5 @@ args:
     value: 443
   - name: "scope_urls_regex"
     type: "string"
-    description: "to define scanning scope."
+    description: "Regexp to define scanning scope, if not set, all URLs are scanned."
 
