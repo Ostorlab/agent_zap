@@ -1,7 +1,7 @@
 kind: Agent
 name: zap
 version: 0.2.4
-image: images/logo.png 
+image: images/logo.png
 description: |
   This repository is an implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [zap Fingerprinter](https://github.com/urbanadventurer/zap.git).
 
@@ -91,4 +91,7 @@ args:
     type: "number"
     description: "Target that doesn't specify port will use this argument to set the target port."
     value: 443
+  - name: "scope_urls_regex"
+    type: "string"
+    description: "to define scanning scope."
 

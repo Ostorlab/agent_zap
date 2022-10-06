@@ -1,11 +1,14 @@
 """Zap agent implementation"""
 import logging
-from typing import Dict
+from typing import Dict, Optional
+import re
 
 from ostorlab.agent import agent
 from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from rich import logging as rich_logging
+from ostorlab.agent import definitions as agent_definitions
+from ostorlab.runtimes import definitions as runtime_definitions
 
 from agent import result_parser
 from agent import zap_wrapper
@@ -25,6 +28,13 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
 
     _scan_profile: str
 
+    def __init__(self, agent_definition: agent_definitions.AgentDefinition,
+                 agent_settings: runtime_definitions.AgentSettings) -> None:
+
+        agent.Agent.__init__(self, agent_definition, agent_settings)
+        vuln_mixin.AgentReportVulnMixin.__init__(self)
+        self._scope_urls_regex: Optional[str] = self.args.get('scope_urls_regex')
+
     def start(self) -> None:
         """Setup Zap scanner."""
         self._zap = zap_wrapper.ZapWrapper(scan_profile=self.args.get('scan_profile'))
@@ -39,9 +49,12 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
             None
         """
         target = self._prepare_target(message)
-        logger.info('scanning target %s', target)
-        results = self._zap.scan(target)
-        self._emit_results(results)
+        if self._should_process_target(self._scope_urls_regex, target) is False:
+            logger.info('scanning target does not match url regex %s', target)
+        else:
+            logger.info('scanning target %s', target)
+            results = self._zap.scan(target)
+            self._emit_results(results)
 
     def _prepare_target(self, message: m.Message) -> str:
         """Prepare targets based on type, if a domain name is provided, port and protocol are collected from the config.
@@ -68,6 +81,14 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
                 entry=vuln.entry,
                 technical_detail=vuln.technical_detail,
                 risk_rating=vuln.risk_rating)
+
+    def _should_process_target(self, scope_urls_regex: Optional[str], url: str) -> bool:
+        if scope_urls_regex is None:
+            return True
+        link_in_scan_domain = re.match(scope_urls_regex, url) is not None
+        if not link_in_scan_domain:
+            logger.warning('link url %s is not in domain %s', url, scope_urls_regex)
+        return link_in_scan_domain
 
 
 if __name__ == '__main__':
