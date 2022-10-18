@@ -53,7 +53,7 @@ class Vulnerability:
     entry: kb.Entry
     technical_detail: str
     risk_rating: vuln_mixin.RiskRating
-    asset_location: vuln_mixin.VulnerabilityLocation
+    vulnerability_location: vuln_mixin.VulnerabilityLocation
 
 
 def parse_results(results: Dict):
@@ -113,14 +113,15 @@ def parse_results(results: Dict):
                     ),
                     technical_detail=technical_detail,
                     risk_rating=_map_risk_rating(risk_rating_id, confidence_id),
-                    asset_location=vuln_mixin.VulnerabilityLocation(asset=domain_name.DomainName(name=host),
-                                                                    metadata=[
-                                                                        vuln_mixin.VulnerabilityLocationMetaData(
-                                                                            type=vuln_mixin.MetaDataType.URL, value=uri
-                                                                        ),
-                                                                        vuln_mixin.VulnerabilityLocationMetaData(
-                                                                            type=vuln_mixin.MetaDataType.PORT,
-                                                                            value=port
-                                                                        )
-                                                                    ])
+                    vulnerability_location=vuln_mixin.VulnerabilityLocation(asset=domain_name.DomainName(name=host),
+                                                                            metadata=[
+                                                                                vuln_mixin.VulnerabilityLocationMetaData(
+                                                                                    type=vuln_mixin.MetaDataType.URL,
+                                                                                    value=uri
+                                                                                ),
+                                                                                vuln_mixin.VulnerabilityLocationMetaData(
+                                                                                    type=vuln_mixin.MetaDataType.PORT,
+                                                                                    value=port
+                                                                                )
+                                                                            ])
                 )
