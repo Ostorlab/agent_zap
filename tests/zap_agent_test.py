@@ -12,7 +12,8 @@ def testAgentZap_whenDomainNameAsset_RunScan(scan_message, test_agent, mocker, a
         assert mock_scan.is_called_once_with('https://test.ostorlab.co')
         assert len(agent_mock) > 0
         assert 'v3.report.vulnerability' in [a.selector for a in agent_mock]
-        assert ['domain_name', 'metadata'] in [list(a.data.get('asset_location', {}).keys()) for a in agent_mock]
+        assert ['domain_name', 'metadata'] in [list(a.data.get('vulnerability_location', {}).keys()) for a in
+                                               agent_mock]
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(scan_message_2, test_agent_with_url_scope, mocker, agent_mock):
@@ -24,7 +25,8 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(scan_message_2, test_age
         assert mock_scan.is_called_once_with('https://ostorlab.co')
         assert len(agent_mock) > 0
         assert 'v3.report.vulnerability' in [a.selector for a in agent_mock]
-        assert ['domain_name', 'metadata'] in [list(a.data.get('asset_location', {}).keys()) for a in agent_mock]
+        assert ['domain_name', 'metadata'] in [list(a.data.get('vulnerability_location', {}).keys()) for a in
+                                               agent_mock]
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_NotRunScan(scan_message, test_agent_with_url_scope, mocker,

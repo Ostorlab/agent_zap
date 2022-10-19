@@ -114,14 +114,14 @@ def parse_results(results: Dict):
                     technical_detail=technical_detail,
                     risk_rating=_map_risk_rating(risk_rating_id, confidence_id),
                     vulnerability_location=vuln_mixin.VulnerabilityLocation(asset=domain_name.DomainName(name=host),
-                                                                            metadata=[
-                                                                                vuln_mixin.VulnerabilityLocationMetaData(
-                                                                                    type=vuln_mixin.MetaDataType.URL,
-                                                                                    value=uri
-                                                                                ),
-                                                                                vuln_mixin.VulnerabilityLocationMetaData(
-                                                                                    type=vuln_mixin.MetaDataType.PORT,
-                                                                                    value=port
-                                                                                )
-                                                                            ])
+                                                                        metadata=[
+                                                                            vuln_mixin.VulnerabilityLocationMetadata(
+                                                                                type=vuln_mixin.MetadataType.URL,
+                                                                                value=uri
+                                                                            ),
+                                                                            vuln_mixin.VulnerabilityLocationMetadata(
+                                                                                type=vuln_mixin.MetadataType.PORT,
+                                                                                value=port
+                                                                            )
+                                                                        ])
                 )
