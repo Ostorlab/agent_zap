@@ -5,6 +5,7 @@ from typing import Dict
 from markdownify import markdownify as md
 from ostorlab.agent.kb import kb
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
+from ostorlab.assets import domain_name
 
 RISK_RATING_MAPPING = {
     0: vuln_mixin.RiskRating.INFO,
@@ -52,6 +53,7 @@ class Vulnerability:
     entry: kb.Entry
     technical_detail: str
     risk_rating: vuln_mixin.RiskRating
+    vulnerability_location: vuln_mixin.VulnerabilityLocation
 
 
 def parse_results(results: Dict):
@@ -65,6 +67,8 @@ def parse_results(results: Dict):
     """
     for site in results.get('site', []):
         target = site.get('@name')
+        host = site.get('@host')
+        port = site.get('@port')
         for alert in site.get('alerts'):
             title = alert.get('name')
             description = md(alert.get('desc'))
@@ -108,4 +112,16 @@ def parse_results(results: Dict):
                         cvss_v3_vector=''
                     ),
                     technical_detail=technical_detail,
-                    risk_rating=_map_risk_rating(risk_rating_id, confidence_id))
+                    risk_rating=_map_risk_rating(risk_rating_id, confidence_id),
+                    vulnerability_location=vuln_mixin.VulnerabilityLocation(asset=domain_name.DomainName(name=host),
+                                                                        metadata=[
+                                                                            vuln_mixin.VulnerabilityLocationMetadata(
+                                                                                type=vuln_mixin.MetadataType.URL,
+                                                                                value=uri
+                                                                            ),
+                                                                            vuln_mixin.VulnerabilityLocationMetadata(
+                                                                                type=vuln_mixin.MetadataType.PORT,
+                                                                                value=port
+                                                                            )
+                                                                        ])
+                )
