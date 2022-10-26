@@ -1,6 +1,6 @@
 kind: Agent
 name: zap
-version: 0.2.5
+version: 0.2.6
 image: images/logo.png
 description: |
   This repository is an implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [zap Fingerprinter](https://github.com/urbanadventurer/zap.git).
