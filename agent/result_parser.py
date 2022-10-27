@@ -94,7 +94,17 @@ def parse_results(results: Dict):
                     param=param,
                     attack=attack,
                     evidence=evidence)
-
+                vuln_location = vuln_mixin.VulnerabilityLocation(asset=domain_name.DomainName(name=host),
+                                                                 metadata=[
+                                                                     vuln_mixin.VulnerabilityLocationMetadata(
+                                                                         metadata_type=vuln_mixin.MetadataType.URL,
+                                                                         value=uri
+                                                                     ),
+                                                                     vuln_mixin.VulnerabilityLocationMetadata(
+                                                                         metadata_type=vuln_mixin.MetadataType.PORT,
+                                                                         value=port
+                                                                     )
+                                                                 ])
                 yield Vulnerability(
                     entry=kb.Entry(
                         title=title,
@@ -113,15 +123,5 @@ def parse_results(results: Dict):
                     ),
                     technical_detail=technical_detail,
                     risk_rating=_map_risk_rating(risk_rating_id, confidence_id),
-                    vulnerability_location=vuln_mixin.VulnerabilityLocation(asset=domain_name.DomainName(name=host),
-                                                                        metadata=[
-                                                                            vuln_mixin.VulnerabilityLocationMetadata(
-                                                                                type=vuln_mixin.MetadataType.URL,
-                                                                                value=uri
-                                                                            ),
-                                                                            vuln_mixin.VulnerabilityLocationMetadata(
-                                                                                type=vuln_mixin.MetadataType.PORT,
-                                                                                value=port
-                                                                            )
-                                                                        ])
+                    vulnerability_location=vuln_location
                 )
