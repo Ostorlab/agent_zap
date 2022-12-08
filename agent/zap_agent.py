@@ -60,7 +60,8 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
             self._emit_results(results)
 
     def _prepare_target(self, message: m.Message) -> str:
-        """Prepare targets based on type, if a domain name is provided, port and protocol are collected from the config."""
+        """Prepare targets based on type,
+        if a domain name is provided, port and protocol are collected from the config."""
         if message.data.get("name") is not None:
             domain_name = message.data.get("name")
             https = self.args.get("https")
