@@ -14,6 +14,7 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python
 WORKDIR /zap
 RUN rm -r Python-3.10.0
 COPY requirement.txt .
+RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirement.txt
 RUN mkdir -p /app/agent
 ENV PYTHONPATH=/app
