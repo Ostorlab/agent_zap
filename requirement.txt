@@ -1,3 +1,4 @@
 ostorlab[agent]
 rich
 markdownify
+pyyaml
