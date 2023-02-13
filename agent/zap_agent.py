@@ -33,7 +33,6 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         agent_definition: agent_definitions.AgentDefinition,
         agent_settings: runtime_definitions.AgentSettings,
     ) -> None:
-
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
@@ -61,7 +60,8 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
 
     def _prepare_target(self, message: m.Message) -> str:
         """Prepare targets based on type,
-        if a domain name is provided, port and protocol are collected from the config."""
+        if a domain name is provided, port and protocol are collected from the config.
+        """
         if message.data.get("name") is not None:
             domain_name = message.data.get("name")
             https = self.args.get("https")
