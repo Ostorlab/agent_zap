@@ -81,8 +81,11 @@ def testAgentZap_whenScanResultsFileIsEmpty_doesNotCrash(
 ):
     """Tests running the agent when the scan results file is empty and does not cause a crash."""
 
-    mocker.patch("subprocess.run", return_value=subprocess.CalledProcessError(cmd="", returncode=0))
-    mocker.patch("agent.zap_wrapper.OUTPUT_DIR", '.')
+    mocker.patch(
+        "subprocess.run",
+        return_value=subprocess.CalledProcessError(cmd="", returncode=0),
+    )
+    mocker.patch("agent.zap_wrapper.OUTPUT_DIR", ".")
     test_agent.start()
     test_agent.process(scan_message)
 
