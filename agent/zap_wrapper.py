@@ -43,7 +43,10 @@ class ZapWrapper:
             command = self._prepare_command(target, pathlib.Path(t.name).name)
             logger.info("running command %s", command)
             subprocess.run(command, check=False)
-            return json.load(t)
+            try:
+                return json.load(t)
+            except json.JSONDecodeError:
+                return {}
 
     def _prepare_command(self, url: str, output) -> List[str]:
         """Prepare zap command."""

@@ -1,6 +1,6 @@
 kind: Agent
 name: zap
-version: 0.3.2
+version: 0.3.3
 image: images/logo.png
 description: |
   This repository is an implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [zap Fingerprinter](https://github.com/urbanadventurer/zap.git).
@@ -49,7 +49,7 @@ description: |
    3. Build the agent image using ostorlab cli.
 
    ```shell
-   ostortlab agent build --file=ostorlab.yaml --force
+   ostorlab agent build --file=ostorlab.yaml --force
    ```
    You can pass the optional flag `--organization` to specify your organisation. The organization is empty by default.
 

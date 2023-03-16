@@ -1,6 +1,7 @@
 """Unittests for Zap agent."""
 import pathlib
 import json
+import subprocess
 
 
 def testAgentZap_whenDomainNameAsset_RunScan(
@@ -73,3 +74,19 @@ def testAgentZap_whenLinkAsset_RunScan(
         assert mock_scan.is_called_once_with("https://test.ostorlab.co")
         assert len(agent_mock) > 0
         assert agent_mock[0].selector == "v3.report.vulnerability"
+
+
+def testAgentZap_whenScanResultsFileIsEmpty_doesNotCrash(
+    scan_message, test_agent, mocker, agent_mock
+):
+    """Tests running the agent when the scan results file is empty and does not cause a crash."""
+
+    mocker.patch(
+        "subprocess.run",
+        return_value=subprocess.CalledProcessError(cmd="", returncode=0),
+    )
+    mocker.patch("agent.zap_wrapper.OUTPUT_DIR", ".")
+    test_agent.start()
+    test_agent.process(scan_message)
+
+    assert len(agent_mock) == 0
