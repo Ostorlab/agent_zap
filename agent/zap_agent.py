@@ -1,16 +1,17 @@
 """Zap agent implementation"""
 import logging
-from typing import Dict, Optional
 import re
+from typing import Dict, Optional
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from ostorlab.runtimes import definitions as runtime_definitions
-
 from rich import logging as rich_logging
 
+from agent import apis
 from agent import result_parser
+from agent import status_tracker
 from agent import zap_wrapper
 
 logging.basicConfig(
@@ -36,6 +37,32 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
+        self.scanning_engine_endpoint: str = self.args.get(
+            "api_scanning_engine_base_url", ""
+        )
+        self.scanning_engine_auth_token: str = self.args.get(
+            "scanning_engine_token", ""
+        )
+        self.reporting_engine_endpoint: str = self.args.get(
+            "api_reporting_engine_base_url", ""
+        )
+        self.reporting_engine_auth_token: str = self.args.get(
+            "reporting_engine_token", ""
+        )
+        self.reference_scan_id: Optional[int] = self.args.get("reference_scan_id")
+        self.vpn_country_code: Optional[str] = self.args.get("vpn_country_code")
+
+        self.api_conf = apis.APIConfiguration(
+            scanning_engine_endpoint=self.scanning_engine_endpoint,
+            scanning_engine_auth_token=self.scanning_engine_auth_token,
+            reporting_engine_endpoint=self.reporting_engine_endpoint,
+            reporting_engine_auth_token=self.reporting_engine_auth_token,
+        )
+
+        if self.reference_scan_id is not None:
+            self.status_tracker = status_tracker.StatusTracker(
+                self.api_conf, self.reference_scan_id
+            )
 
     def start(self) -> None:
         """Setup Zap scanner."""
@@ -50,11 +77,26 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         Returns:
             None
         """
+
+        if self.vpn_country_code is not None:
+            try:
+                self._zap.use_vpn(self.vpn_country_code)
+            except zap_wrapper.SetUpVpnError:
+                try:
+                    self.status_tracker.add_agent_status(
+                        action_name="use_vpn",
+                        level=status_tracker.ScanStatusLevel.ERROR,
+                        message=f"Unable to use Vpn for this country {self.vpn_country_code}.",
+                    )
+                except AttributeError:
+                    logger.error("Can't set the status of Vpn action")
+
         target = self._prepare_target(message)
         if self._should_process_target(self._scope_urls_regex, target) is False:
             logger.info("scanning target does not match url regex %s", target)
         else:
             logger.info("scanning target %s", target)
+
             results = self._zap.scan(target)
             self._emit_results(results)
 

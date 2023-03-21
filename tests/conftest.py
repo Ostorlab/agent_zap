@@ -65,3 +65,46 @@ def test_agent_with_url_scope():
             healthcheck_port=random.randint(5000, 6000),
         )
         return zap_agent.ZapAgent(definition, settings)
+
+
+@pytest.fixture
+def test_agent_with_vpn():
+    with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
+        definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
+        definition.args.append(
+            {"name": "vpn_country_code", "type": "string", "value": "US"}
+        )
+        definition.args.append(
+            {"name": "scan_profile", "type": "string", "value": "full"}
+        )
+        settings = runtime_definitions.AgentSettings(
+            key="agent/ostorlab/zap",
+            bus_url="NA",
+            bus_exchange_topic="NA",
+            args=[],
+            healthcheck_port=random.randint(5000, 6000),
+        )
+        return zap_agent.ZapAgent(definition, settings)
+
+
+@pytest.fixture
+def test_agent_with_vpn_no_config():
+    with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
+        definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
+        definition.args.append(
+            {"name": "vpn_country_code", "type": "string", "value": "AL"}
+        )
+        definition.args.append(
+            {"name": "reference_scan_id", "type": "number", "value": 0}
+        )
+        definition.args.append(
+            {"name": "scan_profile", "type": "string", "value": "full"}
+        )
+        settings = runtime_definitions.AgentSettings(
+            key="agent/ostorlab/zap",
+            bus_url="NA",
+            bus_exchange_topic="NA",
+            args=[],
+            healthcheck_port=random.randint(5000, 6000),
+        )
+        return zap_agent.ZapAgent(definition, settings)
