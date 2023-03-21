@@ -1,13 +1,12 @@
 """Zap agent implementation"""
 import logging
-from typing import Dict, Optional
 import re
+from typing import Dict, Optional
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from ostorlab.runtimes import definitions as runtime_definitions
-
 from rich import logging as rich_logging
 
 from agent import result_parser
@@ -36,6 +35,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
+        self.vpn_config_content: Optional[str] = self.args.get("vpn_config_content")
 
     def start(self) -> None:
         """Setup Zap scanner."""
@@ -50,11 +50,19 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         Returns:
             None
         """
+
+        if self.vpn_config_content is not None:
+            try:
+                self._zap.use_vpn(self.vpn_config_content)
+            except zap_wrapper.SetUpVpnError:
+                logger.error("Can't set the status of Vpn action")
+
         target = self._prepare_target(message)
         if self._should_process_target(self._scope_urls_regex, target) is False:
             logger.info("scanning target does not match url regex %s", target)
         else:
             logger.info("scanning target %s", target)
+
             results = self._zap.scan(target)
             self._emit_results(results)
 

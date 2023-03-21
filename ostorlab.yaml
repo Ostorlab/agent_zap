@@ -94,4 +94,7 @@ args:
   - name: "scope_urls_regex"
     type: "string"
     description: "Regexp to define scanning scope, if not set, all URLs are scanned."
+  - name: "vpn_config"
+    type: "string"
+    description: "The vpn config content."
 
