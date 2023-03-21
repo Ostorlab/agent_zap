@@ -103,7 +103,7 @@ def testAgentZap_whenScanResultsFileIsEmpty_doesNotCrash(
 def testAgentZap_whenVpnCountry_RunScan(
     scan_message_link, test_agent_with_vpn, mocker, agent_mock
 ):
-    """Tests running the agent and emitting vulnerabilities."""
+    """Tests running the agent with vpn_country and emitting vulnerabilities."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
         "r", encoding="utf-8"
     ) as o:
@@ -135,7 +135,7 @@ def testAgentZap_whenVpnCountry_RunScan(
 def testAgentZap_whenVpnCountryHasNoConfig_RunScan(
     scan_message_link, test_agent_with_vpn_no_config, mocker, agent_mock
 ):
-    """Tests running the agent and emitting vulnerabilities."""
+    """Tests running the agent with vpn_country but no config found and emitting vulnerabilities."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
         "r", encoding="utf-8"
     ) as o:
