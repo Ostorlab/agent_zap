@@ -70,7 +70,7 @@ class ZapWrapper:
         Args:
             vpn_config_content: vpn config content
         """
-        with open("/etc/wireguard/wg0.conf", "w") as config_file:
+        with open("/etc/wireguard/wg0.conf", "w", encoding="UTF-8") as config_file:
             config_file.write(vpn_config_content)
 
     def use_vpn(self, vpn_config_content: str) -> None:
