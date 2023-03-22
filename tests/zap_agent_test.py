@@ -139,7 +139,7 @@ def testAgentZap_whenVpnCountry_RunScan(
         assert agent_mock[0].selector == "v3.report.vulnerability"
 
 
-def testUseVpn_whenConfigFile_callVpn(mocker):
+def testUseVpn_whenConfigFile_callVPN(mocker):
     subprocess_mocker = mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
 
     mocker.patch(
