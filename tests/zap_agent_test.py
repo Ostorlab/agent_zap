@@ -140,6 +140,7 @@ def testAgentZap_whenVpnCountry_RunScan(
 
 
 def testUseVpn_whenConfigFile_callVPN(mocker):
+    """Tests set up VPN when call androguard."""
     subprocess_mocker = mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
 
     mocker.patch(
