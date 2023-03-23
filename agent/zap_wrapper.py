@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 from typing import List, Dict
 
+
 logger = logging.getLogger(__name__)
 
 OUTPUT_SUFFIX = ".json"
