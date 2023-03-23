@@ -97,4 +97,7 @@ args:
   - name: "vpn_config"
     type: "string"
     description: "The vpn config content."
+  - name: "dns_config"
+    type: "string"
+    description: "DNS configuration."
 

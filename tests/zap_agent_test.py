@@ -4,7 +4,7 @@ import pathlib
 import json
 import subprocess
 
-from agent import zap_wrapper
+from unittest.mock import mock_open
 
 VPN_CONFIG = """[Interface]
 # NetShield = 1
@@ -38,6 +38,8 @@ def testAgentZap_whenDomainNameAsset_RunScan(
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
+        mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+        mocker.patch("builtins.open", new_callable=mock_open())
         test_agent.start()
         test_agent.process(scan_message)
         assert mock_scan.is_called_once_with("https://test.ostorlab.co")
@@ -58,6 +60,8 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
+        mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+        mocker.patch("builtins.open", new_callable=mock_open())
         test_agent_with_url_scope.start()
         test_agent_with_url_scope.process(scan_message_2)
         assert mock_scan.is_called_once_with("https://ostorlab.co")
@@ -78,6 +82,8 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_NotRunScan(
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
+        mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+        mocker.patch("builtins.open", new_callable=mock_open())
         test_agent_with_url_scope.start()
         test_agent_with_url_scope.process(scan_message)
         mock_scan.assert_not_called()
@@ -93,6 +99,8 @@ def testAgentZap_whenLinkAsset_RunScan(
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
+        mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+        mocker.patch("builtins.open", new_callable=mock_open())
         test_agent.start()
         test_agent.process(scan_message_link)
         assert mock_scan.is_called_once_with("https://test.ostorlab.co")
@@ -109,6 +117,8 @@ def testAgentZap_whenScanResultsFileIsEmpty_doesNotCrash(
         "subprocess.run",
         return_value=subprocess.CalledProcessError(cmd="", returncode=0),
     )
+    mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+    mocker.patch("builtins.open", new_callable=mock_open())
     mocker.patch("agent.zap_wrapper.OUTPUT_DIR", ".")
     test_agent.start()
     test_agent.process(scan_message)
@@ -128,7 +138,7 @@ def testAgentZap_whenVpnCountry_RunScan(
         )
 
         use_vpn_mock = mocker.patch(
-            "agent.zap_wrapper.ZapWrapper.use_vpn", return_value=None
+            "agent.zap_agent.ZapAgent.use_vpn", return_value=None
         )
         mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
         test_agent_with_vpn.start()
@@ -139,20 +149,26 @@ def testAgentZap_whenVpnCountry_RunScan(
         assert agent_mock[0].selector == "v3.report.vulnerability"
 
 
-def testUseVpn_whenConfigFile_callVPN(mocker):
+def testUseVpn_whenConfigFile_callVPN(
+    scan_message_link, test_agent_with_vpn, mocker, agent_mock
+):
     """Tests set up VPN when call androguard."""
-    subprocess_mocker = mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+    with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
+        "r", encoding="utf-8"
+    ) as o:
+        mocker.patch("agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o))
 
-    mocker.patch(
-        "agent.zap_wrapper.ZapWrapper._write_vpn_config_content_to_file",
-        return_value=None,
-    )
-    zap_wrapper.ZapWrapper(scan_profile="full").use_vpn(VPN_CONFIG)
+        mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+        mocker.patch(
+            "agent.zap_agent.ZapAgent._save_vpn_and_dns_configurations",
+            return_value=None,
+        )
+        subprocess_mocker = mocker.patch(
+            "subprocess.run", return_value=EXEC_COMMAND_OUTPUT
+        )
 
-    assert subprocess_mocker.call_count == 2
-    assert subprocess_mocker.call_args_list[0].args[0] == ["wg-quick", "up", "wg0"]
-    assert subprocess_mocker.call_args_list[1].args[0] == [
-        "cp",
-        "/app/agent/tools/wireguard/resolv/resolv.conf",
-        "/etc/resolv.conf",
-    ]
+        test_agent_with_vpn.start()
+        test_agent_with_vpn.process(scan_message_link)
+
+        assert subprocess_mocker.call_count == 1
+        assert subprocess_mocker.call_args_list[0].args[0] == ["wg-quick", "up", "wg0"]

@@ -1,7 +1,9 @@
 """Zap agent implementation"""
+import datetime
 import logging
 import re
-from typing import Dict, Optional
+import subprocess
+from typing import Dict, Optional, List, cast
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.message import message as m
@@ -11,6 +13,24 @@ from rich import logging as rich_logging
 
 from agent import result_parser
 from agent import zap_wrapper
+
+
+class Error(Exception):
+    """Base Custom Error Class."""
+
+
+class RunCommandError(Error):
+    """Error when running a command using a subprocess."""
+
+
+class SetUpVpnError(Error):
+    """Set Up VPN Error."""
+
+
+COMMAND_TIMEOUT = datetime.timedelta(minutes=1)
+
+WIREGUARD_CONFIG_FILE_PATH = "/etc/wireguard/wg0.conf"
+DNS_RESOLV_CONFIG_PATH = "/etc/resolv.conf"
 
 logging.basicConfig(
     format="%(message)s",
@@ -35,7 +55,8 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
-        self.vpn_config_content: Optional[str] = self.args.get("vpn_config_content")
+        self._vpn_config_content: Optional[str] = self.args.get("vpn_config")
+        self._vpn_dns_content: Optional[str] = self.args.get("dns_config")
 
     def start(self) -> None:
         """Setup Zap scanner."""
@@ -51,10 +72,10 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
             None
         """
 
-        if self.vpn_config_content is not None:
+        if self._vpn_config_content is not None:
             try:
-                self._zap.use_vpn(self.vpn_config_content)
-            except zap_wrapper.SetUpVpnError:
+                self.use_vpn(self._vpn_config_content)
+            except SetUpVpnError:
                 logger.error("Can't set the status of Vpn action")
 
         target = self._prepare_target(message)
@@ -102,6 +123,61 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         if not link_in_scan_domain:
             logger.warning("link url %s is not in domain %s", url, scope_urls_regex)
         return link_in_scan_domain
+
+    def use_vpn(self, vpn_config_content: str) -> None:
+        """Use the Vpn for the scan in case if the country code was set
+        Args:
+            vpn_config_content: the vpn config
+        """
+        try:
+            if vpn_config_content is None or vpn_config_content == "":
+                logger.error("No config file found for this country to setup the Vpn")
+                raise SetUpVpnError
+
+            self._save_vpn_and_dns_configurations()
+
+            self._exec_command(["wg-quick", "up", "wg0"])
+
+            logger.info("connected with %s", DNS_RESOLV_CONFIG_PATH)
+        except RunCommandError as e:
+            logger.warning("%s", e)
+
+    def _save_vpn_and_dns_configurations(self) -> None:
+        """Write the config content to a file
+        Args:
+            vpn_config_content: vpn config content
+        """
+        logger.info("writing congif")
+        with open(WIREGUARD_CONFIG_FILE_PATH, "w", encoding="UTF-8") as conf_file:
+            conf_file.write(cast(str, self._vpn_config_content))
+
+        with open(DNS_RESOLV_CONFIG_PATH, "w", encoding="UTF-8") as dns_file:
+            dns_file.write(cast(str, self._vpn_dns_content))
+
+    def _exec_command(self, command: List[str]) -> None:
+        """Execute a command.
+
+        Args:
+            command: The command to execute.
+        """
+        try:
+            logger.info("%s", " ".join(command))
+            output = subprocess.run(
+                command,
+                capture_output=True,
+                timeout=COMMAND_TIMEOUT.seconds,
+                check=True,
+            )
+            logger.debug("process returned: %s", output.returncode)
+            logger.debug("output: %s", output.stdout)
+            logger.debug("err: %s", output.stderr)
+
+        except subprocess.CalledProcessError as e:
+            raise RunCommandError(
+                f'An error occurred while running the command {" ".join(command)}'
+            ) from e
+        except subprocess.TimeoutExpired:
+            logger.warning("Java command timed out for command %s", " ".join(command))
 
 
 if __name__ == "__main__":

@@ -23,6 +23,12 @@ AllowedIPs = 0.0.0.0/0
 Endpoint = 2.2.2.2:22
 """
 
+DNS_CONFIG = """
+nameserver 127.0.0.11
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+"""
+
 
 @pytest.fixture
 def scan_message():
@@ -86,11 +92,15 @@ def test_agent_with_vpn():
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
         definition.args.append(
-            {"name": "vpn_config_content", "type": "string", "value": VPN_CONFIG}
+            {"name": "vpn_config", "type": "string", "value": VPN_CONFIG}
+        )
+        definition.args.append(
+            {"name": "dns_config", "type": "string", "value": DNS_CONFIG}
         )
         definition.args.append(
             {"name": "scan_profile", "type": "string", "value": "full"}
         )
+
         settings = runtime_definitions.AgentSettings(
             key="agent/ostorlab/zap",
             bus_url="NA",
