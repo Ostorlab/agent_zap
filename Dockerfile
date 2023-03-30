@@ -1,17 +1,18 @@
-FROM ubuntu:22.04
-
-# Install necessary packages
-RUN apt-get update && apt-get install -y wget openjdk-11-jre curl python3.10 python3.10-dev python3-pip wireguard-tools openresolv iproute2
-
-# Install ZAP proxy
-ARG ZAP_VERSION=2.12.0
-RUN wget https://github.com/zaproxy/zaproxy/releases/download/v$ZAP_VERSION/ZAP_"$ZAP_VERSION"_Linux.tar.gz -O /tmp/zap.tar.gz
-RUN tar -xzf /tmp/zap.tar.gz -C /opt
-RUN ln -s /opt/ZAP_$ZAP_VERSION/zap.sh /usr/local/bin/zap
-
-# Set Python 3.10 as the default Python version
-RUN ln -s /usr/bin/python3.10 /usr/bin/python
-
+FROM owasp/zap2docker-stable
+RUN mkdir -p /zap/wrk
+USER root
+RUN apt-get update -y
+RUN apt-get install wget build-essential libreadline-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev -y
+RUN wget -c https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tar.xz
+RUN tar -Jxvf Python-3.10.0.tar.xz
+WORKDIR Python-3.10.0
+RUN ./configure --enable-optimizations
+RUN make -j 4
+RUN make altinstall
+RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.10 1
+WORKDIR /zap
+RUN rm -r Python-3.10.0
 COPY requirement.txt .
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirement.txt
