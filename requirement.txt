@@ -3,3 +3,4 @@ rich
 markdownify
 pyyaml
 python-owasp-zap-v2.4
+tenacity

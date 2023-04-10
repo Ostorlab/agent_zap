@@ -1,4 +1,5 @@
 """Zap wrapper implementation"""
+import datetime
 import json
 import logging
 import pathlib
@@ -6,6 +7,7 @@ import subprocess
 import tempfile
 from typing import List, Dict
 
+import tenacity
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,8 @@ PROFILE_SCRIPT = {
     "api": "/zap/zap-api.py",
     "full": "/zap/zap-full-scan.py",
 }
+
+JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=20)
 
 
 class ZapWrapper:
@@ -31,6 +35,11 @@ class ZapWrapper:
             raise ValueError()
         self._scan_profile = scan_profile
 
+    @tenacity.retry(
+        stop=tenacity.stop_after_attempt(5),
+        wait=tenacity.wait_fixed(2),
+        retry=tenacity.retry_if_exception_type(subprocess.TimeoutExpired),
+    )
     def scan(self, target: str) -> Dict:
         """Starts a scan on targets and returns JSON generated output.
 
@@ -43,8 +52,8 @@ class ZapWrapper:
         with tempfile.NamedTemporaryFile(dir=OUTPUT_DIR, suffix=OUTPUT_SUFFIX) as t:
             command = self._prepare_command(target, pathlib.Path(t.name).name)
             logger.info("running command %s", command)
-            subprocess.run(command, check=False)
             try:
+                subprocess.run(command, check=False, timeout=JAVA_COMMAND_TIMEOUT.seconds)
                 return json.load(t)
             except json.JSONDecodeError:
                 return {}
