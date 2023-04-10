@@ -19,7 +19,7 @@ PROFILE_SCRIPT = {
     "full": "/zap/zap-full-scan.py",
 }
 
-JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=20)
+JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=60)
 
 
 class ZapWrapper:
