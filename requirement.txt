@@ -4,3 +4,5 @@ markdownify
 pyyaml
 python-owasp-zap-v2.4
 tenacity
+awscli
+urllib3

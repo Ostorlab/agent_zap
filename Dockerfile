@@ -5,10 +5,32 @@ FROM ubuntu:22.04 AS final
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install necessary packages
-RUN apt-get update && apt-get install -y wget openjdk-11-jdk curl python3.10 python3.10-dev python3-pip wireguard-tools openresolv iproute2
-
-# Set Python 3.10 as the default Python version
-RUN ln -s /usr/bin/python3.10 /usr/bin/python
+RUN apt-get update && apt-get install -q -y --fix-missing \
+	make \
+	automake \
+	autoconf \
+	gcc g++ \
+	openjdk-11-jdk \
+	wget \
+	curl \
+	xmlstarlet \
+	unzip \
+	git \
+	openbox \
+	xterm \
+	net-tools \
+	python3-pip \
+	python-is-python3 \
+    curl \
+    python3.10 \
+    python3.10-dev \
+    python3-pip \
+    wireguard-tools \
+    openresolv \
+    iproute2 \
+    xvfb \
+    x11vnc && \
+	rm -rf /var/lib/apt/lists/*
 
 COPY requirement.txt .
 RUN python3 -m pip install --upgrade pip
@@ -23,8 +45,11 @@ WORKDIR /zap
 #Change to the zap user so things get done as the right person (apart from copy)
 USER zap
 
+RUN mkdir /home/zap/.vnc
+
 # Copy stable release
 COPY --from=builder --chown=1000:1000 /zap .
+COPY  --from=builder --chown=1000:1000 /zap/webswing /zap/webswing
 
 ARG TARGETARCH
 ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-$TARGETARCH
@@ -38,10 +63,6 @@ ENV HOME /home/zap/
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-RUN mkdir /home/zap/.vnc
-
-COPY --from=builder --chown=1000:1000 /zap/webswing/webswing.config /zap/webswing/
-COPY --from=builder --chown=1000:1000 /zap/webswing/webswing.properties /zap/webswing/
 COPY --from=builder --chown=1000:1000 /home/zap/.ZAP/policies /home/zap/.ZAP/policies/
 COPY --from=builder --chown=1000:1000 /root/.ZAP/policies /root/.ZAP/policies/
 # The scan script loads the scripts from dev home dir.
