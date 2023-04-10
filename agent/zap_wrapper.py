@@ -53,7 +53,9 @@ class ZapWrapper:
             command = self._prepare_command(target, pathlib.Path(t.name).name)
             logger.info("running command %s", command)
             try:
-                subprocess.run(command, check=False, timeout=JAVA_COMMAND_TIMEOUT.seconds)
+                subprocess.run(
+                    command, check=False, timeout=JAVA_COMMAND_TIMEOUT.seconds
+                )
                 return json.load(t)
             except json.JSONDecodeError:
                 return {}

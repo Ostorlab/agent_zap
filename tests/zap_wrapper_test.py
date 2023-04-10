@@ -14,9 +14,13 @@ def testZapWrapperInit_withIncorrectProfile_raisesValueError():
         zap_wrapper.ZapWrapper(scan_profile="random_value")
 
 
-def testZapWrapperScan_withTimeoutException_raisesValueError(mocker: plugin.MockerFixture,):
+def testZapWrapperScan_withTimeoutException_raisesValueError(
+    mocker: plugin.MockerFixture,
+):
     """Validates wrapper timeout logic"""
-    run_mock = mocker.patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="", timeout=0.1))
+    run_mock = mocker.patch(
+        "subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="", timeout=0.1)
+    )
     mocker.patch.object(zap_wrapper, "OUTPUT_DIR", "/tmp")
     with pytest.raises(tenacity.RetryError):
         zap = zap_wrapper.ZapWrapper(scan_profile="baseline")
