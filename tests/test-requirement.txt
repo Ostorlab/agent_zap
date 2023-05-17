@@ -3,3 +3,4 @@ pylint-quotes
 pytest
 pytest-cov
 pytest-mock
+# Typing requirements. 
