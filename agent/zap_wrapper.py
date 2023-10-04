@@ -25,15 +25,17 @@ JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=60)
 class ZapWrapper:
     """Zap scanner wrapper."""
 
-    def __init__(self, scan_profile: str):
+    def __init__(self, scan_profile: str, crawl_timeout: int | None = None):
         """Configures wrapper to start scanning targets.
 
         Args:
             scan_profile: Scan profile from one of these values (baseline, api and full).
+            crawl_timeout: Max duration to crawl in minutes. None means no limit.
         """
         if scan_profile not in PROFILE_SCRIPT:
             raise ValueError()
         self._scan_profile = scan_profile
+        self._crawl_timeout = crawl_timeout
 
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(5),
@@ -62,4 +64,12 @@ class ZapWrapper:
 
     def _prepare_command(self, url: str, output) -> List[str]:
         """Prepare zap command."""
-        return [PROFILE_SCRIPT[self._scan_profile], "-d", "-t", url, "-j", "-J", output]
+        command = [PROFILE_SCRIPT[self._scan_profile], "-d"]
+        # Set target.
+        command += ["-t", url]
+        # Set timeout.
+        if self._crawl_timeout is not None:
+            command += ["-m", str(self._crawl_timeout)]
+        # Set output and Spider crawling.
+        command += ["-j", "-J", output]
+        return command

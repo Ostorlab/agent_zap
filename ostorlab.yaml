@@ -100,4 +100,7 @@ args:
   - name: "dns_config"
     type: "string"
     description: "DNS configuration."
-
+  - name: "crawl_timeout"
+    type: "number"
+    description: "Max crawl duration in minutes."
+    value: 10

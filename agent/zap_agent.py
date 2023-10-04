@@ -57,10 +57,12 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
         self._vpn_config_content: Optional[str] = self.args.get("vpn_config")
         self._vpn_dns_content: Optional[str] = self.args.get("dns_config")
+        self._scan_profile: Optional[str] = self.args.get("scan_profile")
+        self._crawl_timeout: Optional[int] = self.args.get("crawl_timeout")
 
     def start(self) -> None:
         """Setup Zap scanner."""
-        self._zap = zap_wrapper.ZapWrapper(scan_profile=self.args.get("scan_profile"))
+        self._zap = zap_wrapper.ZapWrapper(scan_profile=self._scan_profile, crawl_timeout=self._crawl_timeout)
 
     def process(self, message: m.Message) -> None:
         """Trigger zap scan and emits vulnerabilities.
