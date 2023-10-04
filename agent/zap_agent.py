@@ -62,7 +62,9 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
 
     def start(self) -> None:
         """Setup Zap scanner."""
-        self._zap = zap_wrapper.ZapWrapper(scan_profile=self._scan_profile, crawl_timeout=self._crawl_timeout)
+        self._zap = zap_wrapper.ZapWrapper(
+            scan_profile=self._scan_profile, crawl_timeout=self._crawl_timeout
+        )
 
     def process(self, message: m.Message) -> None:
         """Trigger zap scan and emits vulnerabilities.
