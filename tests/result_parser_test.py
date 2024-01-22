@@ -19,7 +19,7 @@ def testParseResults_always_yieldsValidVulnerabilities():
             v for v in vulnz if v.entry.title == "Absence of Anti-CSRF Tokens"
         ]
         assert len(parsed_vulnz) == 11
-        assert parsed_vulnz[0].entry.risk_rating == 4
+        assert parsed_vulnz[0].risk_rating.name == "POTENTIALLY"
         assert (
             "http://projects.webappsec.org/Cross-Site-Request-Forgery"
             in parsed_vulnz[0].entry.references
