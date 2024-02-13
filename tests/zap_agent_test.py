@@ -1,10 +1,9 @@
 """Unittests for Zap agent."""
 import io
-import pathlib
 import json
+import pathlib
 import subprocess
-
-from unittest.mock import mock_open
+from unittest import mock
 
 VPN_CONFIG = """[Interface]
 # NetShield = 1
@@ -39,7 +38,7 @@ def testAgentZap_whenDomainNameAsset_RunScan(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
         mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
-        mocker.patch("builtins.open", new_callable=mock_open())
+        mocker.patch("builtins.open", new_callable=mock.mock_open())
         test_agent.start()
         test_agent.process(scan_message)
         assert mock_scan.is_called_once_with("https://test.ostorlab.co")
@@ -61,7 +60,7 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
         mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
-        mocker.patch("builtins.open", new_callable=mock_open())
+        mocker.patch("builtins.open", new_callable=mock.mock_open())
         test_agent_with_url_scope.start()
         test_agent_with_url_scope.process(scan_message_2)
         assert mock_scan.is_called_once_with("https://ostorlab.co")
@@ -83,7 +82,7 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_NotRunScan(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
         mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
-        mocker.patch("builtins.open", new_callable=mock_open())
+        mocker.patch("builtins.open", new_callable=mock.mock_open())
         test_agent_with_url_scope.start()
         test_agent_with_url_scope.process(scan_message)
         mock_scan.assert_not_called()
@@ -100,7 +99,7 @@ def testAgentZap_whenLinkAsset_RunScan(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
         )
         mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
-        mocker.patch("builtins.open", new_callable=mock_open())
+        mocker.patch("builtins.open", new_callable=mock.mock_open())
         test_agent.start()
         test_agent.process(scan_message_link)
         assert mock_scan.is_called_once_with("https://test.ostorlab.co")
@@ -118,7 +117,7 @@ def testAgentZap_whenScanResultsFileIsEmpty_doesNotCrash(
         return_value=subprocess.CalledProcessError(cmd="", returncode=0),
     )
     mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
-    mocker.patch("builtins.open", new_callable=mock_open())
+    mocker.patch("builtins.open", new_callable=mock.mock_open())
     mocker.patch("agent.zap_wrapper.OUTPUT_DIR", ".")
     test_agent.start()
     test_agent.process(scan_message)
@@ -172,3 +171,31 @@ def testUseVpn_whenConfigFile_callVPN(
 
         assert subprocess_mocker.call_count == 1
         assert subprocess_mocker.call_args_list[0].args[0] == ["wg-quick", "up", "wg0"]
+
+
+def testAgentZap_whenProxyIsProvided_RunScanWithProxyArguments(
+    scan_message_2, test_agent_with_proxy, mocker, agent_mock
+):
+    """Tests running the agent and emitting vulnerabilities."""
+    mocker.patch("agent.zap_wrapper.OUTPUT_DIR", ".")
+
+    test_agent_with_proxy.start()
+    mock_subprocess = mocker.patch("subprocess.run", return_value=None)
+    mocker.patch("builtins.open", new_callable=mock.mock_open())
+
+    test_agent_with_proxy.process(scan_message_2)
+
+    assert mock_subprocess.call_count == 1
+    assert mock_subprocess.call_args[0][0] == [
+        "/zap/zap-full-scan.py",
+        "-d",
+        "-t",
+        "https://ostorlab.co",
+        "-m",
+        "10",
+        "-z",
+        '"-config network.connection.httpProxy.enabled=true -config network.connection.httpProxy.host=proxy.ostorlab.co -config network.connection.httpProxy.port=8899"',
+        "-j",
+        "-J",
+        mock.ANY,
+    ]

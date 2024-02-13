@@ -1,4 +1,5 @@
 """Pytest fixture for the Zap agent."""
+import json
 import pathlib
 import random
 
@@ -6,6 +7,7 @@ import pytest
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.message import message
 from ostorlab.runtimes import definitions as runtime_definitions
+from ostorlab.utils import defintions as utils_definitions
 
 from agent import zap_agent
 
@@ -82,6 +84,27 @@ def test_agent_with_url_scope():
             bus_url="NA",
             bus_exchange_topic="NA",
             args=[],
+            healthcheck_port=random.randint(5000, 6000),
+        )
+        return zap_agent.ZapAgent(definition, settings)
+
+
+@pytest.fixture
+def test_agent_with_proxy():
+    with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
+        definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
+        definition.args[3]["value"] = "([a-zA-Z]+://ostorlab.co/?.*)"
+        settings = runtime_definitions.AgentSettings(
+            key="agent/ostorlab/zap",
+            bus_url="NA",
+            bus_exchange_topic="NA",
+            args=[
+                utils_definitions.Arg(
+                    name="proxy",
+                    type="string",
+                    value=json.dumps("http://proxy.ostorlab.co:8899").encode(),
+                )
+            ],
             healthcheck_port=random.randint(5000, 6000),
         )
         return zap_agent.ZapAgent(definition, settings)
