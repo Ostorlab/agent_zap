@@ -16,7 +16,7 @@ OUTPUT_SUFFIX = ".json"
 OUTPUT_DIR = "/zap/wrk"
 PROFILE_SCRIPT = {
     "baseline": "/zap/zap-baseline.py",
-    "api": "/zap/zap-api.py",
+    "api": "/zap/zap-api-scan.py",
     "full": "/zap/zap-full-scan.py",
 }
 
