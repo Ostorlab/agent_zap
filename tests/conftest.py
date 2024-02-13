@@ -90,7 +90,7 @@ def test_agent_with_url_scope():
 
 
 @pytest.fixture
-def test_agent_with_proxy():
+def test_agent_with_proxy() -> zap_agent.ZapAgent:
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
         definition.args[3]["value"] = "([a-zA-Z]+://ostorlab.co/?.*)"
