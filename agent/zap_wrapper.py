@@ -92,9 +92,7 @@ class ZapWrapper:
         if self._proxy is not None:
             parsed_proxy = _parse_proxy(self._proxy)
             if parsed_proxy is not None:
-                zap_arguments = (
-                    f"-config network.connection.httpProxy.enabled=true -config network.connection.httpProxy.host={parsed_proxy.proxy_host} -config network.connection.httpProxy.port={parsed_proxy.proxy_port}"
-                )
+                zap_arguments = f"-config network.connection.httpProxy.enabled=true -config network.connection.httpProxy.host={parsed_proxy.proxy_host} -config network.connection.httpProxy.port={parsed_proxy.proxy_port}"
                 # Note: zap_arguments is a STRING,
                 # and it passed as a single argument to the command, using the -z option for the zap profile.
                 command.extend(["-z", f'"{zap_arguments}"'])
