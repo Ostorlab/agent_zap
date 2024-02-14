@@ -31,7 +31,7 @@ def testZapWrapperScan_withTimeoutException_raisesValueError(
 
 def testZapWrapperScan_whenProxyNoSchema_shouldNotCallWithProxy(
     mocker: plugin.MockerFixture,
-):
+) -> None:
     """Validates wrapper handles proxy with no schema"""
     run_mock = mocker.patch("subprocess.run")
     mocker.patch.object(zap_wrapper, "OUTPUT_DIR", "/tmp")
@@ -48,9 +48,9 @@ def testZapWrapperScan_whenProxyNoSchema_shouldNotCallWithProxy(
         "-t",
         "https://dummy.com",
         "-z",
-        '"-config network.connection.httpProxy.enabled=true -config '
+        "-config network.connection.httpProxy.enabled=true -config "
         "network.connection.httpProxy.host=proxynoschema.com -config "
-        'network.connection.httpProxy.port=8080"',
+        "network.connection.httpProxy.port=8080",
         "-j",
         "-J",
         mock.ANY,

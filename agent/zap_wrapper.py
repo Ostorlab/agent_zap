@@ -5,7 +5,7 @@ import logging
 import pathlib
 import subprocess
 import tempfile
-from typing import List, Dict, NamedTuple
+from typing import NamedTuple
 from urllib import parse
 
 import tenacity
@@ -60,7 +60,7 @@ class ZapWrapper:
         wait=tenacity.wait_fixed(2),
         retry=tenacity.retry_if_exception_type(subprocess.TimeoutExpired),
     )
-    def scan(self, target: str) -> Dict:
+    def scan(self, target: str) -> dict:
         """Starts a scan on targets and returns JSON generated output.
 
         Args:
@@ -74,13 +74,13 @@ class ZapWrapper:
             logger.info("running command %s", command)
             try:
                 subprocess.run(
-                    command, check=False, timeout=JAVA_COMMAND_TIMEOUT.seconds
+                    command, check=False, timeout=15
                 )
                 return json.load(t)
             except json.JSONDecodeError:
                 return {}
 
-    def _prepare_command(self, url: str, output) -> List[str]:
+    def _prepare_command(self, url: str, output) -> list[str]:
         """Prepare zap command."""
         command = [PROFILE_SCRIPT[self._scan_profile], "-d"]
         # Set target.
@@ -95,7 +95,7 @@ class ZapWrapper:
                 zap_arguments = f"-config network.connection.httpProxy.enabled=true -config network.connection.httpProxy.host={parsed_proxy.proxy_host} -config network.connection.httpProxy.port={parsed_proxy.proxy_port}"
                 # Note: zap_arguments is a STRING,
                 # and it passed as a single argument to the command, using the -z option for the zap profile.
-                command.extend(["-z", f'"{zap_arguments}"'])
+                command.extend(["-z", zap_arguments])
         # Set output and Spider crawling.
         command.extend(["-j", "-J", output])
         return command

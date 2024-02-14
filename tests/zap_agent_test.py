@@ -5,6 +5,11 @@ import pathlib
 import subprocess
 from unittest import mock
 
+from ostorlab.agent.message import message
+from pytest_mock import plugin
+
+from agent import zap_agent
+
 VPN_CONFIG = """[Interface]
 # NetShield = 1
 # Moderate NAT = off
@@ -28,11 +33,11 @@ EXEC_COMMAND_OUTPUT = subprocess.CompletedProcess(
 
 
 def testAgentZap_whenDomainNameAsset_RunScan(
-    scan_message, test_agent, mocker, agent_mock
+        scan_message, test_agent, mocker, agent_mock
 ):
     """Tests running the agent and emitting vulnerabilities."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
-        "r", encoding="utf-8"
+            "r", encoding="utf-8"
     ) as o:
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
@@ -50,11 +55,11 @@ def testAgentZap_whenDomainNameAsset_RunScan(
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
-    scan_message_2, test_agent_with_url_scope, mocker, agent_mock
+        scan_message_2, test_agent_with_url_scope, mocker, agent_mock
 ):
     """Tests running the agent and emitting vulnerabilities."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
-        "r", encoding="utf-8"
+            "r", encoding="utf-8"
     ) as o:
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
@@ -72,11 +77,11 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_NotRunScan(
-    scan_message, test_agent_with_url_scope, mocker, agent_mock
+        scan_message, test_agent_with_url_scope, mocker, agent_mock
 ):
     """Tests running the agent and emitting vulnerabilities."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
-        "r", encoding="utf-8"
+            "r", encoding="utf-8"
     ) as o:
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
@@ -89,11 +94,11 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_NotRunScan(
 
 
 def testAgentZap_whenLinkAsset_RunScan(
-    scan_message_link, test_agent, mocker, agent_mock
+        scan_message_link, test_agent, mocker, agent_mock
 ):
     """Tests running the agent and emitting vulnerabilities."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
-        "r", encoding="utf-8"
+            "r", encoding="utf-8"
     ) as o:
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
@@ -108,7 +113,7 @@ def testAgentZap_whenLinkAsset_RunScan(
 
 
 def testAgentZap_whenScanResultsFileIsEmpty_doesNotCrash(
-    scan_message, test_agent, mocker, agent_mock
+        scan_message, test_agent, mocker, agent_mock
 ):
     """Tests running the agent when the scan results file is empty and does not cause a crash."""
 
@@ -126,11 +131,11 @@ def testAgentZap_whenScanResultsFileIsEmpty_doesNotCrash(
 
 
 def testAgentZap_whenVpnCountry_RunScan(
-    scan_message_link, test_agent_with_vpn, mocker, agent_mock
+        scan_message_link, test_agent_with_vpn, mocker, agent_mock
 ):
     """Tests running the agent with vpn_country and emitting vulnerabilities."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
-        "r", encoding="utf-8"
+            "r", encoding="utf-8"
     ) as o:
         mock_scan = mocker.patch(
             "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
@@ -149,11 +154,11 @@ def testAgentZap_whenVpnCountry_RunScan(
 
 
 def testUseVpn_whenConfigFile_callVPN(
-    scan_message_link, test_agent_with_vpn, mocker, agent_mock
+        scan_message_link, test_agent_with_vpn, mocker, agent_mock
 ):
     """Tests set up VPN when call androguard."""
     with (pathlib.Path(__file__).parent / "zap-test-output.json").open(
-        "r", encoding="utf-8"
+            "r", encoding="utf-8"
     ) as o:
         mocker.patch("agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o))
 
@@ -174,15 +179,18 @@ def testUseVpn_whenConfigFile_callVPN(
 
 
 def testAgentZap_whenProxyIsProvided_RunScanWithProxyArguments(
-    scan_message_2, test_agent_with_proxy, mocker, agent_mock
-):
+        scan_message_2: message.Message,
+        test_agent_with_proxy: zap_agent.ZapAgent,
+        mocker: plugin.MockerFixture,
+        agent_mock: list[message.Message,],
+) -> None:
     """Tests running the agent and emitting vulnerabilities."""
+    del agent_mock
     mocker.patch("agent.zap_wrapper.OUTPUT_DIR", ".")
-
-    test_agent_with_proxy.start()
     mock_subprocess = mocker.patch("subprocess.run", return_value=None)
     mocker.patch("builtins.open", new_callable=mock.mock_open())
 
+    test_agent_with_proxy.start()
     test_agent_with_proxy.process(scan_message_2)
 
     assert mock_subprocess.call_count == 1
@@ -194,7 +202,7 @@ def testAgentZap_whenProxyIsProvided_RunScanWithProxyArguments(
         "-m",
         "10",
         "-z",
-        '"-config network.connection.httpProxy.enabled=true -config network.connection.httpProxy.host=proxy.ostorlab.co -config network.connection.httpProxy.port=8899"',
+        '-config network.connection.httpProxy.enabled=true -config network.connection.httpProxy.host=proxy.ostorlab.co -config network.connection.httpProxy.port=8899',
         "-j",
         "-J",
         mock.ANY,

@@ -3,7 +3,7 @@ import datetime
 import logging
 import re
 import subprocess
-from typing import Dict, List, cast
+from typing import  cast
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.message import message as m
@@ -113,7 +113,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         elif message.data.get("url") is not None:
             return message.data.get("url")
 
-    def _emit_results(self, results: Dict) -> None:
+    def _emit_results(self, results: dict) -> None:
         """Parses results and emits vulnerabilities."""
         for vuln in result_parser.parse_results(results):
             self.report_vulnerability(
@@ -161,7 +161,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         with open(DNS_RESOLV_CONFIG_PATH, "w", encoding="UTF-8") as dns_file:
             dns_file.write(cast(str, self._vpn_dns_content))
 
-    def _exec_command(self, command: List[str]) -> None:
+    def _exec_command(self, command: list[str]) -> None:
         """Execute a command.
 
         Args:
