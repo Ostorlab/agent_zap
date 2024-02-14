@@ -106,4 +106,4 @@ args:
     value: 10
   - name: "proxy"
     type: "string"
-    description: "Proxy to use for the scan with nuclei."
+    description: "Proxy to use for the scan with Zap."
