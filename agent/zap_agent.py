@@ -3,7 +3,7 @@ import datetime
 import logging
 import re
 import subprocess
-from typing import  cast
+from typing import cast
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.message import message as m
