@@ -104,3 +104,6 @@ args:
     type: "number"
     description: "Max crawl duration in minutes."
     value: 10
+  - name: "proxy"
+    type: "string"
+    description: "Proxy to use for the scan with Zap."

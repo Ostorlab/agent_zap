@@ -3,7 +3,7 @@ import datetime
 import logging
 import re
 import subprocess
-from typing import Dict, Optional, List, cast
+from typing import cast
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.message import message as m
@@ -54,16 +54,19 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
     ) -> None:
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
-        self._scope_urls_regex: Optional[str] = self.args.get("scope_urls_regex")
-        self._vpn_config_content: Optional[str] = self.args.get("vpn_config")
-        self._vpn_dns_content: Optional[str] = self.args.get("dns_config")
-        self._scan_profile: Optional[str] = self.args.get("scan_profile")
-        self._crawl_timeout: Optional[int] = self.args.get("crawl_timeout")
+        self._scope_urls_regex: str | None = self.args.get("scope_urls_regex")
+        self._vpn_config_content: str | None = self.args.get("vpn_config")
+        self._vpn_dns_content: str | None = self.args.get("dns_config")
+        self._scan_profile: str | None = self.args.get("scan_profile")
+        self._crawl_timeout: int | None = self.args.get("crawl_timeout")
+        self._proxy: str | None = self.args.get("proxy")
 
     def start(self) -> None:
         """Setup Zap scanner."""
         self._zap = zap_wrapper.ZapWrapper(
-            scan_profile=self._scan_profile, crawl_timeout=self._crawl_timeout
+            scan_profile=self._scan_profile,
+            crawl_timeout=self._crawl_timeout,
+            proxy=self._proxy,
         )
 
     def process(self, message: m.Message) -> None:
@@ -110,7 +113,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         elif message.data.get("url") is not None:
             return message.data.get("url")
 
-    def _emit_results(self, results: Dict) -> None:
+    def _emit_results(self, results: dict) -> None:
         """Parses results and emits vulnerabilities."""
         for vuln in result_parser.parse_results(results):
             self.report_vulnerability(
@@ -120,7 +123,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
                 vulnerability_location=vuln.vulnerability_location,
             )
 
-    def _should_process_target(self, scope_urls_regex: Optional[str], url: str) -> bool:
+    def _should_process_target(self, scope_urls_regex: str | None, url: str) -> bool:
         if scope_urls_regex is None:
             return True
         link_in_scan_domain = re.match(scope_urls_regex, url) is not None
@@ -158,7 +161,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
         with open(DNS_RESOLV_CONFIG_PATH, "w", encoding="UTF-8") as dns_file:
             dns_file.write(cast(str, self._vpn_dns_content))
 
-    def _exec_command(self, command: List[str]) -> None:
+    def _exec_command(self, command: list[str]) -> None:
         """Execute a command.
 
         Args:
