@@ -132,3 +132,11 @@ def test_agent_with_vpn():
             healthcheck_port=random.randint(5000, 6000),
         )
         return zap_agent.ZapAgent(definition, settings)
+
+
+@pytest.fixture()
+def zap_missing_headers_output() -> json:
+    zap_output_file = (pathlib.Path(__file__).parent / "zap-missing-headers.json").open(
+        "r", encoding="utf-8"
+    )
+    return json.load(zap_output_file)
