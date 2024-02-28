@@ -30,3 +30,16 @@ def testParseResults_always_yieldsValidVulnerabilities():
             in parsed_vulnz[0].technical_detail
         )
         assert parsed_vulnz[0].risk_rating == vuln_mixin.RiskRating.POTENTIALLY
+
+
+def testParseResults_whenMissingHeader_yieldsValidVulnerabilities(
+    zap_missing_headers_output: json,
+) -> None:
+    """Test proper parsing of Zap JSON output, case when missing header vulnerability."""
+    vulnz = list(result_parser.parse_results(zap_missing_headers_output))
+
+    assert len(vulnz) == 23
+    assert (
+        vulnz[0].technical_detail
+        == "Strict-Transport-Security Header Not Set at https://www.google.com"
+    )

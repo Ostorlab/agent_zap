@@ -32,6 +32,7 @@ def _map_risk_rating(risk: int, confidence: int) -> vuln_mixin.RiskRating:
 
 
 def _build_technical_detail(
+    title: str,
     target: str,
     header: str,
     method: str,
@@ -41,7 +42,10 @@ def _build_technical_detail(
     evidence: str,
 ) -> str:
     """Build the technical detail markdown content."""
-    return f"""{header}
+    if "header not set" in title.lower():
+        technical_detail = f"{title} at {target}"
+    else:
+        technical_detail = f"""{header}
 
 * Target: {target}
 
@@ -52,6 +56,8 @@ def _build_technical_detail(
 {evidence}
 ```
     """
+
+    return technical_detail
 
 
 @dataclasses.dataclass
@@ -101,6 +107,7 @@ def parse_results(results: Dict):
                 evidence = instance.get("evidence")
 
                 technical_detail = _build_technical_detail(
+                    title=title,
                     target=target,
                     header=technical_detail_header,
                     uri=uri,
