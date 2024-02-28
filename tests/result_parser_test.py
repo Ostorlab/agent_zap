@@ -34,8 +34,8 @@ def testParseResults_always_yieldsValidVulnerabilities():
 
 def testParseResults_whenMissingHeader_yieldsValidVulnerabilities(
     zap_missing_headers_output: json,
-):
-    """Test proper parsing of Zap JSON output."""
+) -> None:
+    """Test proper parsing of Zap JSON output, case when missing header vulnerability."""
     vulnz = list(result_parser.parse_results(zap_missing_headers_output))
 
     assert len(vulnz) == 23
