@@ -1,4 +1,5 @@
 """Unit test for the Zap wrapper class."""
+
 import pytest
 import subprocess
 

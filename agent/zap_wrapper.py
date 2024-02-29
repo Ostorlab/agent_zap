@@ -1,4 +1,5 @@
 """Zap wrapper implementation"""
+
 import datetime
 import json
 import logging
