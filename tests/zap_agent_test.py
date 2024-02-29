@@ -1,4 +1,5 @@
 """Unittests for Zap agent."""
+
 import io
 import json
 import pathlib

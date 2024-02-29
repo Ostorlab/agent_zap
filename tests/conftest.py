@@ -1,4 +1,5 @@
 """Pytest fixture for the Zap agent."""
+
 import json
 import pathlib
 import random

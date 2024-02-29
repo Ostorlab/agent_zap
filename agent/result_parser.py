@@ -1,4 +1,5 @@
 """Module to parse zap json results."""
+
 import dataclasses
 from typing import Dict
 
@@ -96,9 +97,9 @@ def parse_results(results: Dict):
                 if r != ""
             }
             cweid = alert.get("cweid")
-            references[
-                f"cwe-{cweid}"
-            ] = f"https://nvd.nist.gov/vuln/detail/{cweid}.html"
+            references[f"cwe-{cweid}"] = (
+                f"https://nvd.nist.gov/vuln/detail/{cweid}.html"
+            )
             for instance in alert.get("instances"):
                 uri = instance.get("uri")
                 method = instance.get("method")
