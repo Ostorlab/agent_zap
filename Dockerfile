@@ -3,6 +3,9 @@ FROM owasp/zap2docker-stable AS builder
 FROM ubuntu:22.04 AS final
 
 ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get remove -y python*
 
 # Install necessary packages
 RUN apt-get update && apt-get install -q -y --fix-missing \
@@ -19,22 +22,23 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
 	openbox \
 	xterm \
 	net-tools \
-	python3-pip \
 	python-is-python3 \
     curl \
-    python3.10 \
-    python3.10-dev \
+    python3.11 \
+    python3.11-dev \
     python3-pip \
     wireguard-tools \
     openresolv \
     iproute2 \
     xvfb \
-    x11vnc && \
+    x11vnc \
+    virtualenv && \
 	rm -rf /var/lib/apt/lists/*
 
 COPY requirement.txt .
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install -r requirement.txt
+RUN python3.11 -m virtualenv -p python3.11 /venv
+RUN /venv/bin/python3.11 -m pip install --upgrade pip
+RUN /venv/bin/python3.11 -m pip install -r requirement.txt
 
 RUN useradd -u 1000 -d /home/zap -m -s /bin/bash zap
 RUN echo zap:zap | chpasswd
@@ -53,7 +57,7 @@ COPY  --from=builder --chown=1000:1000 /zap/webswing /zap/webswing
 
 ARG TARGETARCH
 ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-$TARGETARCH
-ENV PATH $JAVA_HOME/bin:/zap/:$PATH
+ENV PATH /venv/bin:$JAVA_HOME/bin:/zap/:$PATH
 ENV ZAP_PATH /zap/zap.sh
 
 # Default port for use with health check
@@ -81,4 +85,4 @@ COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app
 RUN mkdir -p /zap/wrk
-CMD ["python3", "/app/agent/zap_agent.py"]
+CMD ["/venv/bin/python3.11", "/app/agent/zap_agent.py"]
