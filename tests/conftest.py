@@ -8,7 +8,7 @@ import pytest
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.message import message
 from ostorlab.runtimes import definitions as runtime_definitions
-from ostorlab.utils import defintions as utils_definitions
+from ostorlab.utils import definitions as utils_definitions
 
 from agent import zap_agent
 
