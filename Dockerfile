@@ -1,4 +1,4 @@
-FROM owasp/zap2docker-stable AS builder
+FROM zaproxy/zap-stable AS builder
 
 FROM ubuntu:22.04 AS final
 
