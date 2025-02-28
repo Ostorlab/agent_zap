@@ -8,6 +8,7 @@ import pytest
 
 from agent import helpers
 
+
 def testComputeDna_withDifferentPackage_returnsDifferentDna() -> None:
     """Ensure that whit different port, ComputeDna returns different DNA."""
     vulnerability_title = "Vulnerability Title Unordered Dict"
@@ -51,6 +52,7 @@ def testComputeDna_withDifferentPackage_returnsDifferentDna() -> None:
         dna_2
         == '{"location": {"domain_name": {"name": "google.com"}, "metadata": [{"type": "PORT", "value": "8081"}, {"type": "URL", "value": "google.com/contact"}]}, "technical_detail": "technical_detail", "title": "Vulnerability Title Unordered Dict"}'
     )
+
 
 @pytest.mark.parametrize(
     "unordered_dict, expected",

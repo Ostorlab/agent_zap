@@ -121,7 +121,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
             dna = helpers.compute_dna(
                 vulnerability_title=vuln.entry.title,
                 vuln_location=vuln.vulnerability_location,
-                technical_detail=vuln.technical_detail
+                technical_detail=vuln.technical_detail,
             )
             self.report_vulnerability(
                 entry=vuln.entry,
@@ -188,7 +188,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
 
         except subprocess.CalledProcessError as e:
             raise RunCommandError(
-                f'An error occurred while running the command {" ".join(command)}'
+                f"An error occurred while running the command {' '.join(command)}"
             ) from e
         except subprocess.TimeoutExpired:
             logger.warning("Java command timed out for command %s", " ".join(command))
