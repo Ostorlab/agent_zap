@@ -13,7 +13,6 @@ def testComputeDna_withDifferentPackage_returnsDifferentDna() -> None:
     """Ensure that whit different port, ComputeDna returns different DNA."""
     vulnerability_title = "Vulnerability Title Unordered Dict"
     technical_detail = "technical_detail"
-
     vuln_location_1 = vuln_mixin.VulnerabilityLocation(
         asset=domain_name.DomainName(name="google.com"),
         metadata=[
@@ -25,7 +24,6 @@ def testComputeDna_withDifferentPackage_returnsDifferentDna() -> None:
             ),
         ],
     )
-
     vuln_location_2 = vuln_mixin.VulnerabilityLocation(
         asset=domain_name.DomainName(name="google.com"),
         metadata=[
