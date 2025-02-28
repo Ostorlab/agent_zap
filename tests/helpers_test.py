@@ -10,7 +10,7 @@ from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from agent import helpers
 
 
-def testComputeDna_withDifferentPackage_returnsDifferentDna() -> None:
+def testComputeDna_withDifferentPackages_returnsDifferentDna() -> None:
     """Ensure that whit different port, ComputeDna returns different DNA."""
     vulnerability_title = "Vulnerability Title Unordered Dict"
     technical_detail = "technical_detail"
