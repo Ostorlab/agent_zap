@@ -2,9 +2,10 @@
 
 from typing import Any
 
+import pytest
 from ostorlab.assets import domain_name
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
-import pytest
+
 
 from agent import helpers
 
