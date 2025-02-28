@@ -128,6 +128,7 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
                 technical_detail=vuln.technical_detail,
                 risk_rating=vuln.risk_rating,
                 vulnerability_location=vuln.vulnerability_location,
+                dna=dna,
             )
 
     def _should_process_target(self, scope_urls_regex: str | None, url: str) -> bool:
