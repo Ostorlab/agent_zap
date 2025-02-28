@@ -12,6 +12,7 @@ from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from ostorlab.runtimes import definitions as runtime_definitions
 from rich import logging as rich_logging
 
+from agent import helpers
 from agent import result_parser
 from agent import zap_wrapper
 
@@ -117,6 +118,11 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
     def _emit_results(self, results: dict) -> None:
         """Parses results and emits vulnerabilities."""
         for vuln in result_parser.parse_results(results):
+            dna = helpers.compute_dna(
+                vulnerability_title=vuln.entry.title,
+                vuln_location=vuln.vulnerability_location,
+                technical_detail=vuln.technical_detail
+            )
             self.report_vulnerability(
                 entry=vuln.entry,
                 technical_detail=vuln.technical_detail,
