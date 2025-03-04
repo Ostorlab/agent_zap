@@ -99,7 +99,7 @@ def _sort_dict(d: dict[str, Any] | list[Any]) -> dict[str, Any] | list[Any]:
         A sorted dictionary or list.
     """
     if isinstance(d, dict):
-        return {k: _sort_dict(v) for k, v in sorted(d.items())}
+        return {k: _sort_dict(v) for k, v in d.items()}
     if isinstance(d, list):
         return sorted(
             d,
