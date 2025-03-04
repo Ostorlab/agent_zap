@@ -79,13 +79,12 @@ def _compute_dna(
     """
     dna_data: dict[str, Any] = {"title": vulnerability_title, "param": param}
 
-    if vuln_location is not None:
-        location_dict: dict[str, Any] = vuln_location.to_dict()
-        sorted_location_dict = _sort_dict(location_dict)
-        dna_data["location"] = sorted_location_dict
-    else:
+    if vuln_location is None:
         return None
-
+    location_dict: dict[str, Any] = vuln_location.to_dict()
+    sorted_location_dict = _sort_dict(location_dict)
+    dna_data["location"] = sorted_location_dict
+    
     return json.dumps(dna_data, sort_keys=True)
 
 
