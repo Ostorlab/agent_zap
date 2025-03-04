@@ -84,7 +84,7 @@ def _compute_dna(
     location_dict: dict[str, Any] = vuln_location.to_dict()
     sorted_location_dict = _sort_dict(location_dict)
     dna_data["location"] = sorted_location_dict
-    
+
     return json.dumps(dna_data, sort_keys=True)
 
 
