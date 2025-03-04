@@ -53,6 +53,9 @@ def testAgentZap_whenDomainNameAsset_RunScan(
         assert ["domain_name", "metadata"] in [
             list(a.data.get("vulnerability_location", {}).keys()) for a in agent_mock
         ]
+        assert all(
+            agent_mock[i].data.get("dna") is not None for i in range(len(agent_mock))
+        )
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
@@ -75,6 +78,9 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
         assert ["domain_name", "metadata"] in [
             list(a.data.get("vulnerability_location", {}).keys()) for a in agent_mock
         ]
+        assert all(
+            agent_mock[i].data.get("dna") is not None for i in range(len(agent_mock))
+        )
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_NotRunScan(
