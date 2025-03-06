@@ -77,10 +77,11 @@ def _compute_dna(
     Returns:
         A deterministic JSON representation of the vulnerability DNA.
     """
-    dna_data: dict[str, Any] = {"title": vulnerability_title, "param": param}
-
     if vuln_location is None:
         return None
+
+    dna_data: dict[str, Any] = {"title": vulnerability_title, "param": param}
+
     location_dict: dict[str, Any] = vuln_location.to_dict()
     sorted_location_dict = _sort_dict(location_dict)
     dna_data["location"] = sorted_location_dict
