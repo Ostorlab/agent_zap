@@ -50,14 +50,30 @@ def testAgentZap_whenDomainNameAsset_RunScan(
         assert mock_scan.is_called_once_with("https://test.ostorlab.co")
         assert len(agent_mock) > 0
         assert "v3.report.vulnerability" in [a.selector for a in agent_mock]
-        assert agent_mock[0].data.get("vulnerability_location") == {'domain_name': {'name': 'www.google.com'}, 'metadata': [{'type': 'URL', 'value': 'https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0'}, {'type': 'PORT', 'value': '443'}]}
+        assert agent_mock[0].data.get("vulnerability_location") == {
+            "domain_name": {"name": "www.google.com"},
+            "metadata": [
+                {
+                    "type": "URL",
+                    "value": "https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0",
+                },
+                {"type": "PORT", "value": "443"},
+            ],
+        }
         assert ["domain_name", "metadata"] in [
             list(a.data.get("vulnerability_location", {}).keys()) for a in agent_mock
         ]
-        assert agent_mock[0].data.get("dna") == '{"location": {"domain_name": {"name": "www.google.com"}, "metadata": [{"type": "PORT", "value": "443"}, {"type": "URL", "value": "https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0"}]}, "param": "q", "title": "Open Redirect"}'
-        assert all(
-            agent_mock[i].data.get("dna") is not None for i in range(len(agent_mock))
-        ) is True
+        assert (
+            agent_mock[0].data.get("dna")
+            == '{"location": {"domain_name": {"name": "www.google.com"}, "metadata": [{"type": "PORT", "value": "443"}, {"type": "URL", "value": "https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0"}]}, "param": "q", "title": "Open Redirect"}'
+        )
+        assert (
+            all(
+                agent_mock[i].data.get("dna") is not None
+                for i in range(len(agent_mock))
+            )
+            is True
+        )
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
