@@ -83,31 +83,9 @@ def _compute_dna(
     dna_data: dict[str, Any] = {"title": vulnerability_title, "param": param}
 
     location_dict: dict[str, Any] = vuln_location.to_dict()
-    sorted_location_dict = _sort_dict(location_dict)
-    dna_data["location"] = sorted_location_dict
+    dna_data["location"] = location_dict
 
     return json.dumps(dna_data, sort_keys=True)
-
-
-def _sort_dict(d: dict[str, Any] | list[Any]) -> dict[str, Any] | list[Any]:
-    """Recursively sort lists within dictionary.
-
-    Args:
-        d: The dictionary or list to sort.
-
-    Returns:
-        A sorted dictionary or list.
-    """
-    if isinstance(d, dict):
-        return {k: _sort_dict(v) for k, v in d.items()}
-    if isinstance(d, list):
-        return sorted(
-            d,
-            key=lambda x: json.dumps(x, sort_keys=True)
-            if isinstance(x, dict)
-            else str(x),
-        )
-    return d
 
 
 @dataclasses.dataclass
@@ -133,7 +111,6 @@ def parse_results(results: Dict):
     for site in results.get("site", []):
         target = site.get("@name")
         host = site.get("@host")
-        port = site.get("@port")
         for alert in site.get("alerts"):
             title = alert.get("name")
             description = md(alert.get("desc"))
@@ -172,10 +149,7 @@ def parse_results(results: Dict):
                     metadata=[
                         vuln_mixin.VulnerabilityLocationMetadata(
                             metadata_type=vuln_mixin.MetadataType.URL, value=uri
-                        ),
-                        vuln_mixin.VulnerabilityLocationMetadata(
-                            metadata_type=vuln_mixin.MetadataType.PORT, value=port
-                        ),
+                        )
                     ],
                 )
                 dna = _compute_dna(
