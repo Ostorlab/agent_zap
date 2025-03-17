@@ -50,9 +50,29 @@ def testAgentZap_whenDomainNameAsset_RunScan(
         assert mock_scan.is_called_once_with("https://test.ostorlab.co")
         assert len(agent_mock) > 0
         assert "v3.report.vulnerability" in [a.selector for a in agent_mock]
+        assert agent_mock[0].data.get("vulnerability_location") == {
+            "domain_name": {"name": "www.google.com"},
+            "metadata": [
+                {
+                    "type": "URL",
+                    "value": "https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0",
+                }
+            ],
+        }
         assert ["domain_name", "metadata"] in [
             list(a.data.get("vulnerability_location", {}).keys()) for a in agent_mock
         ]
+        assert (
+            agent_mock[0].data.get("dna")
+            == '{"location": {"domain_name": {"name": "www.google.com"}, "metadata": [{"type": "URL", "value": "https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0"}]}, "param": "q", "title": "Open Redirect"}'
+        )
+        assert (
+            all(
+                agent_mock[i].data.get("dna") is not None
+                for i in range(len(agent_mock))
+            )
+            is True
+        )
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
@@ -75,6 +95,26 @@ def testAgentZap_whenDomainNameAssetAndUrlScope_RunScan(
         assert ["domain_name", "metadata"] in [
             list(a.data.get("vulnerability_location", {}).keys()) for a in agent_mock
         ]
+        assert agent_mock[1].data.get("vulnerability_location") == {
+            "domain_name": {"name": "www.google.com"},
+            "metadata": [
+                {
+                    "type": "URL",
+                    "value": "https://www.google.com/url?q=https://policies.google.com/terms%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw3LU-vlWBv4WomQqSiinRwS&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8qwCCA4",
+                }
+            ],
+        }
+        assert (
+            all(
+                agent_mock[i].data.get("dna") is not None
+                for i in range(len(agent_mock))
+            )
+            is True
+        )
+        assert (
+            agent_mock[1].data.get("dna")
+            == '{"location": {"domain_name": {"name": "www.google.com"}, "metadata": [{"type": "URL", "value": "https://www.google.com/url?q=https://policies.google.com/terms%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw3LU-vlWBv4WomQqSiinRwS&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8qwCCA4"}]}, "param": "q", "title": "Open Redirect"}'
+        )
 
 
 def testAgentZap_whenDomainNameAssetAndUrlScope_NotRunScan(

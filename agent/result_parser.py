@@ -1,7 +1,8 @@
 """Module to parse zap json results."""
 
+import json
 import dataclasses
-from typing import Dict
+from typing import Dict, Any
 
 from markdownify import markdownify as md
 from ostorlab.agent.kb import kb
@@ -61,6 +62,32 @@ def _build_technical_detail(
     return technical_detail
 
 
+def _compute_dna(
+    vulnerability_title: str,
+    vuln_location: vuln_mixin.VulnerabilityLocation | None,
+    param: str,
+) -> str | None:
+    """Compute a deterministic, debuggable DNA representation for a vulnerability.
+
+    Args:
+        vulnerability_title: The title of the vulnerability.
+        vuln_location: The location of the vulnerability.
+        param: params of vulnerability
+
+    Returns:
+        A deterministic JSON representation of the vulnerability DNA.
+    """
+    if vuln_location is None:
+        return None
+
+    dna_data: dict[str, Any] = {"title": vulnerability_title, "param": param}
+
+    location_dict: dict[str, Any] = vuln_location.to_dict()
+    dna_data["location"] = location_dict
+
+    return json.dumps(dna_data, sort_keys=True)
+
+
 @dataclasses.dataclass
 class Vulnerability:
     """Vulnerability dataclass to pass to the emit method."""
@@ -69,6 +96,7 @@ class Vulnerability:
     technical_detail: str
     risk_rating: vuln_mixin.RiskRating
     vulnerability_location: vuln_mixin.VulnerabilityLocation
+    dna: str
 
 
 def parse_results(results: Dict):
@@ -83,7 +111,6 @@ def parse_results(results: Dict):
     for site in results.get("site", []):
         target = site.get("@name")
         host = site.get("@host")
-        port = site.get("@port")
         for alert in site.get("alerts"):
             title = alert.get("name")
             description = md(alert.get("desc"))
@@ -122,11 +149,13 @@ def parse_results(results: Dict):
                     metadata=[
                         vuln_mixin.VulnerabilityLocationMetadata(
                             metadata_type=vuln_mixin.MetadataType.URL, value=uri
-                        ),
-                        vuln_mixin.VulnerabilityLocationMetadata(
-                            metadata_type=vuln_mixin.MetadataType.PORT, value=port
-                        ),
+                        )
                     ],
+                )
+                dna = _compute_dna(
+                    vulnerability_title=title,
+                    vuln_location=vuln_location,
+                    param=param,
                 )
                 yield Vulnerability(
                     entry=kb.Entry(
@@ -149,4 +178,5 @@ def parse_results(results: Dict):
                     technical_detail=technical_detail,
                     risk_rating=_map_risk_rating(risk_rating_id, confidence_id),
                     vulnerability_location=vuln_location,
+                    dna=dna,
                 )
