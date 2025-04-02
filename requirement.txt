@@ -2,7 +2,7 @@ ostorlab[agent]
 rich
 markdownify
 pyyaml
-python-owasp-zap-v2.4
+zaproxy
 tenacity
 awscli
 urllib3
