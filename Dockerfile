@@ -26,31 +26,21 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
     python3.11-dev \
     python3-pip \
     wireguard-tools \
-    coreutils \
     openresolv \
-    sudo \
     iproute2 \
     xvfb \
     x11vnc \
     virtualenv && \
 	rm -rf /var/lib/apt/lists/*
 
-ENV MOZ_DISABLE_NONLOCAL_CONNECTIONS=1
-
-COPY requirement.txt .
-RUN python3.11 -m virtualenv -p python3.11 /venv
-RUN /venv/bin/python3.11 -m pip install --upgrade pip
-RUN /venv/bin/python3.11 -m pip install -r requirement.txt
-
 RUN useradd -u 1000 -d /home/zap -m -s /bin/bash zap
 RUN echo zap:zap | chpasswd
 RUN mkdir /zap && chown zap:zap /zap
 
-RUN usermod -aG sudo zap
-RUN echo "zap ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/zap > /dev/null
-
-
+# Switch to root user for permission changes
 WORKDIR /zap
+
+
 
 #Change to the zap user so things get done as the right person (apart from copy)
 USER zap
@@ -69,7 +59,7 @@ COPY  --from=builder --chown=1000:1000 /zap/webswing /zap/webswing
 
 ARG TARGETARCH
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-$TARGETARCH
-ENV PATH=/home/zap/venv/bin:/venv/bin:$JAVA_HOME/bin:/zap/:$PATH
+ENV PATH=/home/zap/venv/bin:$JAVA_HOME/bin:/zap/:$PATH
 ENV ZAP_PATH=/zap/zap.sh
 
 
@@ -91,22 +81,19 @@ RUN echo "zap2docker-stable" > /zap/container && \
 
 HEALTHCHECK CMD curl --silent --output /dev/null --fail http://localhost:$ZAP_PORT/ || exit 1
 
+USER root
 
-RUN sudo mkdir -p /app/agent
+RUN mkdir -p /app/agent
 ENV PYTHONPATH=/app
 COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app
 RUN mkdir -p /zap/wrk
 
-USER zap
-
-# Switch to root user for permission changes
-USER root
-
 # Set permissions for /zap and /home/zap directories
 RUN chown -R zap:zap /zap && \
     chmod -R 777 /zap && \
+    chmod -R 777 /app && \
     chmod -R 777 /home/zap
 
 # Set /zap as the working directory
