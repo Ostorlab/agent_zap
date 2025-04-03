@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
 
 RUN useradd -u 1000 -d /home/zap -m -s /bin/bash zap
 RUN echo zap:zap | chpasswd
-RUN mkdir /zap && chown zap:zap /zap
+RUN mkdir /zap
 
 WORKDIR /zap
 
