@@ -21,7 +21,6 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
 	net-tools \
 	python-is-python3 \
     firefox-esr \
-    curl \
     python3.11 \
     python3.11-dev \
     python3-pip \
@@ -87,13 +86,9 @@ WORKDIR /app
 RUN mkdir -p /zap/wrk
 
 # Set permissions for /app /zap and /home/zap directories
-RUN chown -R zap:zap /zap && \
-    chmod -R 777 /zap && \
-    chmod -R 777 /app && \
-    chmod -R 777 /home/zap
-
-WORKDIR /app
+RUN chown -R zap:zap /zap /app /home/zap && \
+    chmod -R 700 /zap /app /home/zap
 
 USER zap
 
-CMD ["/venv/bin/python3.11", "/app/agent/zap_agent.py"]
+CMD ["/home/zap/venv/bin/python3.11", "/app/agent/zap_agent.py"]
