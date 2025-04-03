@@ -86,16 +86,14 @@ COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app
 RUN mkdir -p /zap/wrk
 
-# Set permissions for /zap and /home/zap directories
+# Set permissions for /app /zap and /home/zap directories
 RUN chown -R zap:zap /zap && \
     chmod -R 777 /zap && \
     chmod -R 777 /app && \
     chmod -R 777 /home/zap
 
-# Set /zap as the working directory
-WORKDIR /zap
+WORKDIR /app
 
-# Switch back to the zap user
 USER zap
 
 CMD ["/venv/bin/python3.11", "/app/agent/zap_agent.py"]
