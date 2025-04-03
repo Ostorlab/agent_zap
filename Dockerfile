@@ -1,11 +1,8 @@
 FROM zaproxy/zap-stable AS builder
 
-FROM ubuntu:22.04 AS final
+FROM debian:bookworm-slim AS final
 
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get remove -y python*
 
 # Install necessary packages
 RUN apt-get update && apt-get install -q -y --fix-missing \
@@ -13,7 +10,7 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
 	automake \
 	autoconf \
 	gcc g++ \
-	openjdk-11-jdk \
+	openjdk-17-jdk \
 	wget \
 	curl \
 	xmlstarlet \
@@ -23,7 +20,7 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
 	xterm \
 	net-tools \
 	python-is-python3 \
-    curl \
+    firefox-esr \
     python3.11 \
     python3.11-dev \
     python3-pip \
@@ -35,19 +32,20 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
     virtualenv && \
 	rm -rf /var/lib/apt/lists/*
 
-COPY requirement.txt .
-RUN python3.11 -m virtualenv -p python3.11 /venv
-RUN /venv/bin/python3.11 -m pip install --upgrade pip
-RUN /venv/bin/python3.11 -m pip install -r requirement.txt
-
 RUN useradd -u 1000 -d /home/zap -m -s /bin/bash zap
 RUN echo zap:zap | chpasswd
-RUN mkdir /zap && chown zap:zap /zap
+RUN mkdir /zap
 
 WORKDIR /zap
 
 #Change to the zap user so things get done as the right person (apart from copy)
 USER zap
+
+COPY requirement.txt .
+RUN python3.11 -m virtualenv -p python3.11 /home/zap/venv
+RUN /home/zap/venv/bin/python3.11 -m pip install --upgrade pip
+RUN /home/zap/venv/bin/python3.11 -m pip install -r requirement.txt
+
 
 RUN mkdir /home/zap/.vnc
 
@@ -56,14 +54,15 @@ COPY --from=builder --chown=1000:1000 /zap .
 COPY  --from=builder --chown=1000:1000 /zap/webswing /zap/webswing
 
 ARG TARGETARCH
-ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-$TARGETARCH
-ENV PATH /venv/bin:$JAVA_HOME/bin:/zap/:$PATH
-ENV ZAP_PATH /zap/zap.sh
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-$TARGETARCH
+ENV PATH=/home/zap/venv/bin:$JAVA_HOME/bin:/zap/:$PATH
+ENV ZAP_PATH=/zap/zap.sh
+
 
 # Default port for use with health check
-ENV ZAP_PORT 8080
-ENV IS_CONTAINERIZED true
-ENV HOME /home/zap/
+ENV ZAP_PORT=8080
+ENV IS_CONTAINERIZED=true
+ENV HOME=/home/zap/
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
@@ -85,4 +84,11 @@ COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app
 RUN mkdir -p /zap/wrk
-CMD ["/venv/bin/python3.11", "/app/agent/zap_agent.py"]
+
+# Set permissions for /app /zap and /home/zap directories
+RUN chown -R zap:zap /zap /app /home/zap && \
+    chmod -R 700 /zap /app /home/zap
+
+USER zap
+
+CMD ["/home/zap/venv/bin/python3.11", "/app/agent/zap_agent.py"]
