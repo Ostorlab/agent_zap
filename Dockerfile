@@ -37,10 +37,7 @@ RUN useradd -u 1000 -d /home/zap -m -s /bin/bash zap
 RUN echo zap:zap | chpasswd
 RUN mkdir /zap && chown zap:zap /zap
 
-# Switch to root user for permission changes
 WORKDIR /zap
-
-
 
 #Change to the zap user so things get done as the right person (apart from copy)
 USER zap
@@ -76,8 +73,7 @@ COPY --from=builder --chown=1000:1000 /root/.ZAP/policies /root/.ZAP/policies/
 COPY --from=builder --chown=1000:1000 /home/zap/.ZAP_D/scripts /home/zap/.ZAP_D/scripts/
 COPY --from=builder --chown=1000:1000 /home/zap/.xinitrc /home/zap/
 
-RUN echo "zap2docker-stable" > /zap/container && \
-    chmod a+x /home/zap/.xinitrc
+RUN chmod a+x /home/zap/.xinitrc
 
 HEALTHCHECK CMD curl --silent --output /dev/null --fail http://localhost:$ZAP_PORT/ || exit 1
 
