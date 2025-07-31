@@ -45,7 +45,7 @@ def _build_technical_detail(
 ) -> str:
     """Build the technical detail markdown content."""
     if "header not set" in title.lower():
-        technical_detail = f"{title} at {target}"
+        technical_detail = f"{title} at {uri}"
     else:
         technical_detail = f"""{header}
 
