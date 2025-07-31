@@ -42,5 +42,5 @@ def testParseResults_whenMissingHeader_yieldsValidVulnerabilities(
     assert len(vulnz) == 23
     assert (
         vulnz[0].technical_detail
-        == "Strict-Transport-Security Header Not Set at https://www.google.com"
+        == "Strict-Transport-Security Header Not Set at https://www.google.com/default"
     )
