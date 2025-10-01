@@ -116,7 +116,9 @@ class ZapAgent(agent.Agent, vuln_mixin.AgentReportVulnMixin):
 
     def _emit_results(self, results: dict) -> None:
         """Parses results and emits vulnerabilities."""
-        for vuln in result_parser.parse_results(results):
+        for vuln in result_parser.parse_results(
+            results=results, scope_urls_regex=self._scope_urls_regex
+        ):
             self.report_vulnerability(
                 entry=vuln.entry,
                 technical_detail=vuln.technical_detail,

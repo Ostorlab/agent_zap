@@ -1,0 +1,81 @@
+{
+	"@version": "2.11.1",
+	"@generated": "Tue, 29 Mar 2022 11:25:42",
+	"site":[ 
+		{
+			"@name": "https://www.ostorlab.co",
+			"@host": "www.google.com",
+			"@port": "443",
+			"@ssl": "true",
+			"alerts": [ 
+				{
+					"pluginid": "10028",
+					"alertRef": "10028",
+					"alert": "Open Redirect",
+					"name": "Open Redirect",
+					"riskcode": "3",
+					"confidence": "2",
+					"riskdesc": "High (Medium)",
+					"desc": "<p>Open redirects are one of the OWASP 2010 Top Ten vulnerabilities. This check looks at user-supplied input in query string parameters and POST data to identify where open redirects might be possible. Open redirects occur when an application allows user-supplied input (e.g. http://nottrusted.com) to control an offsite redirect. This is generally a pretty accurate way to find where 301 or 302 redirects could be exploited by spammers or phishing attacks.</p><p></p><p>For example an attacker could supply a user with the following link: http://example.com/example.php?url=http://malicious.example.com.</p>",
+					"instances":[ 
+						{
+							"uri": "https://www.ostorlab.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0",
+							"method": "GET",
+							"param": "q",
+							"attack": "",
+							"evidence": ""
+						}
+					],
+					"count": "2",
+					"solution": "<p>To avoid the open redirect vulnerability, parameters of the application script/program must be validated before sending 302 HTTP code (redirect) to the client browser. Implement safe redirect functionality that only redirects to relative URI's, or a list of trusted domains</p>",
+					"otherinfo": "<p>The 301 or 302 response to a request for the following URL appeared to contain user input in the location header:</p><p></p><p>https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0</p><p></p><p>The user input found was:</p><p></p><p>q=https://policies.google.com/privacy?hl=fr-MA&fg=1</p><p></p><p>The context was:</p><p></p><p>https://policies.google.com/privacy?hl=fr-MA&fg=1</p>",
+					"reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html</p><p>https://cwe.mitre.org/data/definitions/601.html</p>",
+					"cweid": "601",
+					"wascid": "38",
+					"sourceid": "1218"
+				}
+			]
+		},
+		{
+			"@name": "https://www.google.com",
+			"@host": "www.google.com",
+			"@port": "443",
+			"@ssl": "true",
+			"alerts": [ 
+				{
+					"pluginid": "10028",
+					"alertRef": "10028",
+					"alert": "Open Redirect",
+					"name": "Open Redirect",
+					"riskcode": "3",
+					"confidence": "2",
+					"riskdesc": "High (Medium)",
+					"desc": "<p>Open redirects are one of the OWASP 2010 Top Ten vulnerabilities. This check looks at user-supplied input in query string parameters and POST data to identify where open redirects might be possible. Open redirects occur when an application allows user-supplied input (e.g. http://nottrusted.com) to control an offsite redirect. This is generally a pretty accurate way to find where 301 or 302 redirects could be exploited by spammers or phishing attacks.</p><p></p><p>For example an attacker could supply a user with the following link: http://example.com/example.php?url=http://malicious.example.com.</p>",
+					"instances":[ 
+						{
+							"uri": "https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0",
+							"method": "GET",
+							"param": "q",
+							"attack": "",
+							"evidence": ""
+						},
+						{
+							"uri": "https://www.google.com/url?q=https://policies.google.com/terms%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw3LU-vlWBv4WomQqSiinRwS&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8qwCCA4",
+							"method": "GET",
+							"param": "q",
+							"attack": "",
+							"evidence": ""
+						}
+					],
+					"count": "2",
+					"solution": "<p>To avoid the open redirect vulnerability, parameters of the application script/program must be validated before sending 302 HTTP code (redirect) to the client browser. Implement safe redirect functionality that only redirects to relative URI's, or a list of trusted domains</p>",
+					"otherinfo": "<p>The 301 or 302 response to a request for the following URL appeared to contain user input in the location header:</p><p></p><p>https://www.google.com/url?q=https://policies.google.com/privacy%3Fhl%3Dfr-MA%26fg%3D1&sa=U&usg=AOvVaw0g_jc-KYZ4RUoufhMKiYyz&ved=0ahUKEwivxPDLmuv2AhXE4IUKHZERCIQQ8awCCA0</p><p></p><p>The user input found was:</p><p></p><p>q=https://policies.google.com/privacy?hl=fr-MA&fg=1</p><p></p><p>The context was:</p><p></p><p>https://policies.google.com/privacy?hl=fr-MA&fg=1</p>",
+					"reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html</p><p>https://cwe.mitre.org/data/definitions/601.html</p>",
+					"cweid": "601",
+					"wascid": "38",
+					"sourceid": "1218"
+				}
+			]
+		}
+	]
+}
