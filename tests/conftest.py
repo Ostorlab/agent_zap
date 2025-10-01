@@ -79,7 +79,7 @@ def test_agent():
 def test_agent_with_url_scope():
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
-        definition.args[3]["value"] = "([a-zA-Z]+://ostorlab.co/?.*)"
+        definition.args[3]["value"] = "([a-zA-Z0-9]+://(www.)?ostorlab.co/?.*)"
         settings = runtime_definitions.AgentSettings(
             key="agent/ostorlab/zap",
             bus_url="NA",
@@ -94,7 +94,7 @@ def test_agent_with_url_scope():
 def test_agent_with_proxy() -> zap_agent.ZapAgent:
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
-        definition.args[3]["value"] = "([a-zA-Z]+://ostorlab.co/?.*)"
+        definition.args[3]["value"] = "([a-zA-Z0-9]+://(www.)?ostorlab.co/?.*)"
         settings = runtime_definitions.AgentSettings(
             key="agent/ostorlab/zap",
             bus_url="NA",

@@ -2,7 +2,8 @@
 
 import json
 import dataclasses
-from typing import Dict, Any
+import re
+from typing import Any
 
 from markdownify import markdownify as md
 from ostorlab.agent.kb import kb
@@ -99,7 +100,7 @@ class Vulnerability:
     dna: str
 
 
-def parse_results(results: Dict):
+def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
     """Parses JSON generated Zap results and yield vulnerability entries.
 
     Args:
@@ -110,6 +111,9 @@ def parse_results(results: Dict):
     """
     for site in results.get("site", []):
         target = site.get("@name")
+        if scope_urls_regex is not None and re.match(scope_urls_regex, target) is None:
+            continue
+
         host = site.get("@host")
         for alert in site.get("alerts"):
             title = alert.get("name")

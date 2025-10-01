@@ -248,3 +248,27 @@ def testAgentZap_whenProxyIsProvided_RunScanWithProxyArguments(
         "-J",
         mock.ANY,
     ]
+
+
+def testAgentZap_whenResultsContainFindingsOutOfScope_onlyInScopeTargetsShouldBeReports(
+    scan_message_2: message.Message,
+    test_agent_with_url_scope: zap_agent.ZapAgent,
+    mocker: plugin.MockerFixture,
+    agent_mock: list[message.Message,],
+) -> None:
+    """Ensure that the url-regex when provided is also applied on the targets of zap."""
+    with (pathlib.Path(__file__).parent / "zap-output-with-multiple-targets.json").open(
+        "r", encoding="utf-8"
+    ) as o:
+        mock_scan = mocker.patch(
+            "agent.zap_wrapper.ZapWrapper.scan", return_value=json.load(o)
+        )
+        mocker.patch("subprocess.run", return_value=EXEC_COMMAND_OUTPUT)
+        mocker.patch("builtins.open", new_callable=mock.mock_open())
+
+        test_agent_with_url_scope.start()
+        test_agent_with_url_scope.process(scan_message_2)
+
+        assert mock_scan.is_called_once_with("https://test.ostorlab.co")
+        assert len(agent_mock) == 1
+        assert agent_mock[0].selector == "v3.report.vulnerability"

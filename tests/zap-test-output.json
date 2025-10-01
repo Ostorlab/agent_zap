@@ -3,7 +3,7 @@
 	"@generated": "Tue, 29 Mar 2022 11:25:42",
 	"site":[ 
 		{
-			"@name": "https://www.google.com",
+			"@name": "https://www.ostorlab.co",
 			"@host": "www.google.com",
 			"@port": "443",
 			"@ssl": "true",
