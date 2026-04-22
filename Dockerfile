@@ -1,6 +1,6 @@
 FROM zaproxy/zap-stable AS builder
 
-FROM debian:bookworm-slim AS final
+FROM python:3.14-slim-bookworm AS final
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -19,17 +19,13 @@ RUN apt-get update && apt-get install -q -y --fix-missing \
 	openbox \
 	xterm \
 	net-tools \
-	python-is-python3 \
     firefox-esr \
-    python3.11 \
-    python3.11-dev \
-    python3-pip \
     wireguard-tools \
     openresolv \
     iproute2 \
     xvfb \
     x11vnc \
-    virtualenv && \
+	&& \
 	rm -rf /var/lib/apt/lists/*
 
 RUN useradd -u 1000 -d /home/zap -m -s /bin/bash zap
@@ -42,9 +38,8 @@ WORKDIR /zap
 USER zap
 
 COPY requirement.txt .
-RUN python3.11 -m virtualenv -p python3.11 /home/zap/venv
-RUN /home/zap/venv/bin/python3.11 -m pip install --upgrade pip
-RUN /home/zap/venv/bin/python3.11 -m pip install -r requirement.txt
+RUN python -m pip install --user --no-cache-dir --upgrade pip
+RUN python -m pip install --user --no-cache-dir -r requirement.txt
 
 
 RUN mkdir /home/zap/.vnc
@@ -55,7 +50,7 @@ COPY  --from=builder --chown=1000:1000 /zap/webswing /zap/webswing
 
 ARG TARGETARCH
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-$TARGETARCH
-ENV PATH=/home/zap/venv/bin:$JAVA_HOME/bin:/zap/:$PATH
+ENV PATH=/home/zap/.local/bin:$JAVA_HOME/bin:/zap/:$PATH
 ENV ZAP_PATH=/zap/zap.sh
 
 
@@ -91,4 +86,4 @@ RUN chown -R zap:zap /zap /app /home/zap && \
 
 USER zap
 
-CMD ["/home/zap/venv/bin/python3.11", "/app/agent/zap_agent.py"]
+CMD ["python", "/app/agent/zap_agent.py"]
