@@ -1,13 +1,13 @@
 """Unit test for the Zap wrapper class."""
 
-import pytest
 import subprocess
+from unittest import mock
+
+import pytest
+import tenacity
+from pytest_mock import plugin
 
 from agent import zap_wrapper
-import tenacity
-
-from pytest_mock import plugin
-from unittest import mock
 
 
 def testZapWrapperInit_withIncorrectProfile_raisesValueError():
@@ -49,9 +49,11 @@ def testZapWrapperScan_whenProxyNoSchema_shouldNotCallWithProxy(
         "-t",
         "https://dummy.com",
         "-z",
-        "-config network.connection.httpProxy.enabled=true -config "
-        "network.connection.httpProxy.host=proxynoschema.com -config "
-        "network.connection.httpProxy.port=8080",
+        (
+            "-config network.connection.httpProxy.enabled=true -config "
+            "network.connection.httpProxy.host=proxynoschema.com -config "
+            "network.connection.httpProxy.port=8080"
+        ),
         "-j",
         "-J",
         mock.ANY,

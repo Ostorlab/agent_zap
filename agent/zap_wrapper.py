@@ -23,7 +23,10 @@ PROFILE_SCRIPT = {
 
 JAVA_COMMAND_TIMEOUT = datetime.timedelta(minutes=60)
 
-ProxyTuple = NamedTuple("ProxyTuple", [("proxy_host", str), ("proxy_port", str)])
+
+class ProxyTuple(NamedTuple):
+    proxy_host: str
+    proxy_port: str
 
 
 def _parse_proxy(proxy: str) -> ProxyTuple | None:
