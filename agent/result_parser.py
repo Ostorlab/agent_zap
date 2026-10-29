@@ -4,6 +4,7 @@ import dataclasses
 import json
 import re
 from typing import Any
+from urllib import parse
 
 from markdownify import markdownify as md
 from ostorlab.agent.kb import kb
@@ -32,6 +33,42 @@ def _map_risk_rating(risk: int, confidence: int) -> vuln_mixin.RiskRating:
         return RISK_RATING_MAPPING[risk]
     else:
         return vuln_mixin.RiskRating.POTENTIALLY
+
+
+CORS_MISCONFIGURATION_TITLE = "CORS Misconfiguration"
+
+# CORS errors to be handled as false positives.
+# The "ACAO Reflection Rule" flags an otherwise benign server that reflects back the
+# scanned target's own hostname (a same-host origin, in its http or https scheme
+# variant). Reflecting one's own host demonstrates no unauthorized cross-origin
+# access, so those alerts are not vulnerabilities.
+_ACAO_HEADER_PREFIX = "access-control-allow-origin"
+
+
+def _is_same_origin_acao_reflection(host: str, evidence: str) -> bool:
+    """Whether a CORS alert's evidence reflects the scanned target's own hostname.
+
+    Args:
+        host: The scanned target host (site name, without scheme).
+        evidence: The Alert instance evidence, holding the reflected
+            ``access-control-allow-origin`` header line, e.g.
+            ``access-control-allow-origin: http://space-prod0.sprinklr.com``.
+
+    Returns:
+        True when the reflected ``access-control-allow-origin`` value is the same
+        host as the scanned target (an http/https variant of the site's own
+        hostname), False otherwise.
+    """
+    if not host or not evidence:
+        return False
+    reflected_origin = evidence.strip()
+    if reflected_origin.lower().startswith(f"{_ACAO_HEADER_PREFIX}:"):
+        reflected_origin = reflected_origin.split(":", 1)[1].strip()
+    try:
+        reflected_host = parse.urlparse(reflected_origin).hostname
+    except ValueError:
+        return False
+    return reflected_host is not None and reflected_host.lower() == host.lower()
 
 
 def _build_technical_detail(
@@ -137,6 +174,12 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                 param = instance.get("param")
                 attack = instance.get("attack")
                 evidence = instance.get("evidence")
+
+                if (
+                    title == CORS_MISCONFIGURATION_TITLE
+                    and _is_same_origin_acao_reflection(host=host, evidence=evidence)
+                ):
+                    continue
 
                 technical_detail = _build_technical_detail(
                     title=title,

@@ -1,0 +1,60 @@
+{
+ "@version": "2.15.0",
+ "@generated": "Thu, 01 Jan 2026 00:00:00",
+ "site": [
+  {
+   "@name": "https://space-prod0.sprinklr.com",
+   "@host": "space-prod0.sprinklr.com",
+   "@port": "443",
+   "@ssl": "true",
+   "alerts": [
+    {
+     "pluginid": "40040",
+     "alertRef": "40040-2",
+     "alert": "CORS Misconfiguration",
+     "name": "CORS Misconfiguration",
+     "riskcode": "2",
+     "confidence": "3",
+     "riskdesc": "Medium (High)",
+     "desc": "<p>The web server responds with the requested origin in the Access-Control-Allow-Origin header.</p>",
+     "solution": "<p>Configure the server to only allow trusted origins.</p>",
+     "otherinfo": "",
+     "reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS</p>",
+     "cweid": "942",
+     "instances": [
+      {
+       "uri": "https://space-prod0.sprinklr.com",
+       "method": "GET",
+       "param": "",
+       "attack": "origin: http://space-prod0.sprinklr.com",
+       "evidence": "access-control-allow-origin: http://space-prod0.sprinklr.com"
+      }
+     ]
+    },
+    {
+     "pluginid": "40040",
+     "alertRef": "40040-2",
+     "alert": "CORS Misconfiguration",
+     "name": "CORS Misconfiguration",
+     "riskcode": "2",
+     "confidence": "3",
+     "riskdesc": "Medium (High)",
+     "desc": "<p>The web server responds with the requested origin in the Access-Control-Allow-Origin header.</p>",
+     "solution": "<p>Configure the server to only allow trusted origins.</p>",
+     "otherinfo": "",
+     "reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS</p>",
+     "cweid": "942",
+     "instances": [
+      {
+       "uri": "https://space-prod0.sprinklr.com",
+       "method": "GET",
+       "param": "",
+       "attack": "origin: https://attacker.example.com",
+       "evidence": "access-control-allow-origin: https://attacker.example.com"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
