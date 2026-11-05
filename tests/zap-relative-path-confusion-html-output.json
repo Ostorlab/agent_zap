@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Thu, 05 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://app.fourthfrontier.com",
+      "@host": "app.fourthfrontier.com",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "10051",
+          "alertRef": "10051-1",
+          "alert": "Relative Path Confusion",
+          "name": "Relative Path Confusion",
+          "riskcode": "2",
+          "confidence": "2",
+          "riskdesc": "Medium (Medium)",
+          "desc": "<p>The web server is configured to serve responses to ambiguous URLs in a manner that is likely to lead to confusion about the correct \"relative path\" for the URL. Resources (CSS, images, etc.) are also specified in the page response using relative, rather than absolute URLs. In an attack, if the web browser parses the \"cross-content\" response in a permissive manner, or can be tricked into permissively parsing the \"cross-content\" response, using techniques such as framing, then the web browser may be fooled into interpreting HTML as CSS (or other content types), leading to an XSS vulnerability.</p>",
+          "solution": "<p>Use a modern DOCTYPE such as &lt;!doctype html&gt; to prevent the page from being rendered in the web browser using \"Quirks Mode\".</p>",
+          "otherinfo": "No <base> tag was specified in the HTML <head> tag to define the location for relative URLs.\n\nA Content Type of \"text/html\" was specified. If the web browser is employing strict parsing rules, this will prevent cross-content attacks from succeeding. Quirks Mode in the web browser would disable strict parsing.\n\nNo X-Frame-Options header was specified, so the page can be framed, and this can be used to enable Quirks Mode, allowing the specified Content Type to be bypassed.",
+          "reference": "<p>https://arxiv.org/abs/1811.00917</p>",
+          "cweid": "20",
+          "wascid": "20",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com/api.js",
+              "method": "GET",
+              "param": "",
+              "attack": "https://app.fourthfrontier.com/api.js/zv3x5/pbv6l",
+              "evidence": "<link rel=\"shortcut icon\" href=\"favicon.png\">"
+            }
+          ]
+        },
+        {
+          "pluginid": "10051",
+          "alertRef": "10051-1",
+          "alert": "Relative Path Confusion",
+          "name": "Relative Path Confusion",
+          "riskcode": "2",
+          "confidence": "2",
+          "riskdesc": "Medium (Medium)",
+          "desc": "<p>The web server is configured to serve responses to ambiguous URLs in a manner that is likely to lead to confusion about the correct \"relative path\" for the URL. Resources (CSS, images, etc.) are also specified in the page response using relative, rather than absolute URLs. In an attack, if the web browser parses the \"cross-content\" response in a permissive manner, or can be tricked into permissively parsing the \"cross-content\" response, using techniques such as framing, then the web browser may be fooled into interpreting HTML as CSS (or other content types), leading to an XSS vulnerability.</p>",
+          "solution": "<p>Use a modern DOCTYPE such as &lt;!doctype html&gt; to prevent the page from being rendered in the web browser using \"Quirks Mode\".</p>",
+          "otherinfo": "No <base> tag was specified in the HTML <head> tag to define the location for relative URLs.\n\nNo Content Type was specified, so Quirks Mode is not required to exploit the vulnerability in the web browser.",
+          "reference": "<p>https://arxiv.org/abs/1811.00917</p>",
+          "cweid": "20",
+          "wascid": "20",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com/main.js",
+              "method": "GET",
+              "param": "",
+              "attack": "https://app.fourthfrontier.com/main.js/ab12c/def34",
+              "evidence": "<link rel=\"stylesheet\" href=\"main.css\">"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
