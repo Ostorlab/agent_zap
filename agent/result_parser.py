@@ -162,20 +162,17 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
             references[f"cwe-{cweid}"] = (
                 f"https://nvd.nist.gov/vuln/detail/{cweid}.html"
             )
+            if (
+                title == SUSPICIOUS_COMMENTS_TITLE
+                and is_webpack_devtool_warning_comment(otherinfo=alert.get("otherinfo"))
+            ):
+                continue
             for instance in alert.get("instances"):
                 uri = instance.get("uri")
                 method = instance.get("method")
                 param = instance.get("param")
                 attack = instance.get("attack")
                 evidence = instance.get("evidence")
-
-                if (
-                    title == SUSPICIOUS_COMMENTS_TITLE
-                    and is_webpack_devtool_warning_comment(
-                        otherinfo=alert.get("otherinfo")
-                    )
-                ):
-                    continue
 
                 technical_detail = _build_technical_detail(
                     title=title,
