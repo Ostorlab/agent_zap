@@ -44,3 +44,40 @@ def testParseResults_whenMissingHeader_yieldsValidVulnerabilities(
         vulnz[0].technical_detail
         == "Strict-Transport-Security Header Not Set at https://www.google.com/default"
     )
+
+
+def testIsHtmlDocumentResponse_whenTextHtmlContentType_shouldReturnTrue() -> None:
+    """Test detection of an explicitly served HTML document in the rule's other info."""
+    otherinfo = (
+        "No <base> tag was specified in the HTML <head> tag to define the location "
+        'for relative URLs.\n\nA Content Type of "text/html" was specified. If the '
+        "web browser is employing strict parsing rules, this will prevent cross-content "
+        "attacks from succeeding."
+    )
+    assert result_parser.is_html_document_response(otherinfo) is True
+
+
+def testIsHtmlDocumentResponse_whenNoContentType_shouldReturnFalse() -> None:
+    """Test that a missing content type is not treated as an HTML document response."""
+    otherinfo = (
+        "No <base> tag was specified in the HTML <head> tag to define the location "
+        "for relative URLs.\n\nNo Content Type was specified, so Quirks Mode is not "
+        "required to exploit the vulnerability in the web browser."
+    )
+    assert result_parser.is_html_document_response(otherinfo) is False
+    assert result_parser.is_html_document_response(None) is False
+    assert result_parser.is_html_document_response("") is False
+
+
+def testParseResults_whenRelativePathConfusionServesHtml_shouldSuppressHtmlDocuments() -> (
+    None
+):
+    """Test that a text/html Relative Path Confusion alert is suppressed while a cross-content one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-relative-path-confusion-html-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "Relative Path Confusion"
+        assert "No Content Type was specified" in vulnz[0].technical_detail

@@ -34,6 +34,33 @@ def _map_risk_rating(risk: int, confidence: int) -> vuln_mixin.RiskRating:
         return vuln_mixin.RiskRating.POTENTIALLY
 
 
+RELATIVE_PATH_CONFUSION_TITLE = "Relative Path Confusion"
+
+# ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
+# to the scanned URL and raises an alert when the response contains relative resource
+# references while the content type cannot rule out cross-content parsing. When the
+# appended path returns the site's HTML shell as "text/html", the server explicitly
+# serves an HTML document: there is no CSS/JS cross-content confusion, so those alerts
+# are false positives.
+_CONTENT_TYPE_LINE_PATTERN = re.compile(r'A Content Type of "([^"]*)" was specified')
+
+
+def is_html_document_response(otherinfo: str | None) -> bool:
+    """Whether the rule's extra info names ``text/html`` as the response content type.
+
+    Args:
+        otherinfo: The raw ``otherinfo`` of the alert, as produced by the ZAP rule.
+
+    Returns:
+        True when the response served at the appended path was an HTML document
+        (``text/html``), False otherwise.
+    """
+    if otherinfo is None:
+        return False
+    match = _CONTENT_TYPE_LINE_PATTERN.search(otherinfo)
+    return match is not None and match.group(1).lower().startswith("text/html")
+
+
 def _build_technical_detail(
     title: str,
     target: str,
@@ -137,6 +164,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                 param = instance.get("param")
                 attack = instance.get("attack")
                 evidence = instance.get("evidence")
+
+                if title == RELATIVE_PATH_CONFUSION_TITLE and is_html_document_response(
+                    otherinfo=alert.get("otherinfo")
+                ):
+                    continue
 
                 technical_detail = _build_technical_detail(
                     title=title,
