@@ -34,6 +34,37 @@ def _map_risk_rating(risk: int, confidence: int) -> vuln_mixin.RiskRating:
         return vuln_mixin.RiskRating.POTENTIALLY
 
 
+SUSPICIOUS_COMMENTS_TITLE = "Information Disclosure - Suspicious Comments"
+
+# ZAP's "Information Disclosure - Suspicious Comments" passive rule (10027) raises an
+# alert whenever a comment in a response matches one of its payload words, compiled as
+# \b<word>\b, case-insensitively. The payload list contains common English words
+# (SELECT, WHERE, FROM, USER, ADMIN, BUG, ...), so benign prose in build-tool
+# boilerplate comments triggers it. webpack prepends a devtool warning to every chunk
+# when a non-production devtool is configured; that warning routinely contains such
+# words ("select a different devtool") and leaks no sensitive information, so those
+# alerts are false positives.
+_WEBPACK_DEVTOOL_WARNING_MARKERS = (
+    "devtool has been used",
+    "This devtool is neither made for production",
+)
+
+
+def is_webpack_devtool_warning_comment(otherinfo: str | None) -> bool:
+    """Whether the rule's extra info names webpack's non-production devtool warning comment.
+
+    Args:
+        otherinfo: The raw ``otherinfo`` of the alert, as produced by the ZAP rule.
+
+    Returns:
+        True when the comment detected by the rule is webpack's devtool warning
+        boilerplate, False otherwise.
+    """
+    if otherinfo is None:
+        return False
+    return any(marker in otherinfo for marker in _WEBPACK_DEVTOOL_WARNING_MARKERS)
+
+
 def _build_technical_detail(
     title: str,
     target: str,
@@ -137,6 +168,14 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                 param = instance.get("param")
                 attack = instance.get("attack")
                 evidence = instance.get("evidence")
+
+                if (
+                    title == SUSPICIOUS_COMMENTS_TITLE
+                    and is_webpack_devtool_warning_comment(
+                        otherinfo=alert.get("otherinfo")
+                    )
+                ):
+                    continue
 
                 technical_detail = _build_technical_detail(
                     title=title,

@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Thu, 05 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://app.fourthfrontier.com",
+      "@host": "app.fourthfrontier.com",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "10027",
+          "alertRef": "10027-1",
+          "alert": "Information Disclosure - Suspicious Comments",
+          "name": "Information Disclosure - Suspicious Comments",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>The response appears to contain suspicious comments which may help an attacker. Note: Matches must be made against the entire response, this may involve the response being chunked and processed when a page load is simulated. This is not the same as matching against the response in the network pane of the browser, or the response in the ZAP history tab.</p>",
+          "solution": "<p>Remove all comments that return information that may help an attacker and fix any underlying problems they refer to.</p>",
+          "otherinfo": "The following pattern was used: \\bSELECT\\b and was detected in likely comment: \"/*\\n\\n* ATTENTION: An \\\"eval-source-map\\\" devtool has been used.\\n\\n* This devtool is neither made for production nor for readable out\", see evidence field for the suspicious comment/snippet.",
+          "reference": "<p>https://owasp.org/www-community/Information_exposure_through_query_strings_in_url</p>",
+          "cweid": "615",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com/js/src_pages_login_vue.1792659162333.js",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "ad the output file, select a different devtool"
+            }
+          ]
+        },
+        {
+          "pluginid": "10027",
+          "alertRef": "10027-2",
+          "alert": "Information Disclosure - Suspicious Comments",
+          "name": "Information Disclosure - Suspicious Comments",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>The response appears to contain suspicious comments which may help an attacker. Note: Matches must be made against the entire response, this may involve the response being chunked and processed when a page load is simulated. This is not the same as matching against the response in the network pane of the browser, or the response in the ZAP history tab.</p>",
+          "solution": "<p>Remove all comments that return information that may help an attacker and fix any underlying problems they refer to.</p>",
+          "otherinfo": "The following pattern was used: \\bSELECT\\b and was detected in likely comment: \"// SELECT * FROM users WHERE password IS NOT NULL\", see evidence field for the suspicious comment/snippet.",
+          "reference": "<p>https://owasp.org/www-community/Information_exposure_through_query_strings_in_url</p>",
+          "cweid": "615",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com/js/admin.js",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "SELECT * FROM users WHERE password IS NOT NULL"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
