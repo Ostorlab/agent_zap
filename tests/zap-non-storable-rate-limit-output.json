@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Thu, 05 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://app.fourthfrontier.com",
+      "@host": "app.fourthfrontier.com",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "10049",
+          "alertRef": "10049-1",
+          "alert": "Non-Storable Content",
+          "name": "Non-Storable Content",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>The response contents are not storable by caching components such as proxy servers. If the response does not contain sensitive, personal or user-specific information, it may benefit from being stored and cached, to improve performance.</p>",
+          "solution": "<p>The content may be marked as storable by ensuring that the following conditions are satisfied:<br>The request method must be understood by the cache and defined as being cacheable (&quot;GET&quot;, &quot;HEAD&quot;, and &quot;POST&quot; are currently defined as cacheable)<br>The response status code must be understood by the cache (one of the 1XX, 2XX, 3XX, 4XX, or 5XX response classes are generally understood)<br>The &quot;no-store&quot; cache directive must not appear in the request or response header fields<br>For caching by &quot;shared&quot; caches such as &quot;proxy&quot; caches, the &quot;private&quot; response directive must not appear in the response<br>For caching by &quot;shared&quot; caches such as &quot;proxy&quot; caches, the &quot;Authorization&quot; header field must not appear in the request, unless the response explicitly allows it (using one of the &quot;must-revalidate&quot;, &quot;public&quot;, or &quot;s-maxage&quot; Cache-Control response directives)<br>In addition to the conditions above, at least one of the following conditions must also be satisfied by the response:<br>It must contain an &quot;Expires&quot; header field<br>It must contain a &quot;max-age&quot; response directive<br>For &quot;shared&quot; caches such as &quot;proxy&quot; caches, it must contain a &quot;s-maxage&quot; response directive<br>It must contain a &quot;Cache Control Extension&quot; that allows it to be cached<br>It must have a status code that is defined as cacheable by default (200, 203, 204, 206, 300, 301, 404, 405, 410, 414, 501).</p>",
+          "reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234<br>https://datatracker.ietf.org/doc/html/rfc7231<br>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+          "cweid": "524",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "429"
+            }
+          ],
+          "otherinfo": ""
+        },
+        {
+          "pluginid": "10049",
+          "alertRef": "10049-1",
+          "alert": "Non-Storable Content",
+          "name": "Non-Storable Content",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>The response contents are not storable by caching components such as proxy servers. If the response does not contain sensitive, personal or user-specific information, it may benefit from being stored and cached, to improve performance.</p>",
+          "solution": "<p>The content may be marked as storable by ensuring that the following conditions are satisfied:<br>The request method must be understood by the cache and defined as being cacheable (&quot;GET&quot;, &quot;HEAD&quot;, and &quot;POST&quot; are currently defined as cacheable)<br>The response status code must be understood by the cache (one of the 1XX, 2XX, 3XX, 4XX, or 5XX response classes are generally understood)<br>The &quot;no-store&quot; cache directive must not appear in the request or response header fields<br>For caching by &quot;shared&quot; caches such as &quot;proxy&quot; caches, the &quot;private&quot; response directive must not appear in the response<br>For caching by &quot;shared&quot; caches such as &quot;proxy&quot; caches, the &quot;Authorization&quot; header field must not appear in the request, unless the response explicitly allows it (using one of the &quot;must-revalidate&quot;, &quot;public&quot;, or &quot;s-maxage&quot; Cache-Control response directives)<br>In addition to the conditions above, at least one of the following conditions must also be satisfied by the response:<br>It must contain an &quot;Expires&quot; header field<br>It must contain a &quot;max-age&quot; response directive<br>For &quot;shared&quot; caches such as &quot;proxy&quot; caches, it must contain a &quot;s-maxage&quot; response directive<br>It must contain a &quot;Cache Control Extension&quot; that allows it to be cached<br>It must have a status code that is defined as cacheable by default (200, 203, 204, 206, 300, 301, 404, 405, 410, 414, 501).</p>",
+          "reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234<br>https://datatracker.ietf.org/doc/html/rfc7231<br>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+          "cweid": "524",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com/account",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "no-store"
+            }
+          ],
+          "otherinfo": ""
+        }
+      ]
+    }
+  ]
+}

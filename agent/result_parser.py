@@ -36,6 +36,8 @@ def _map_risk_rating(risk: int, confidence: int) -> vuln_mixin.RiskRating:
 
 RELATIVE_PATH_CONFUSION_TITLE = "Relative Path Confusion"
 
+NON_STORABLE_CONTENT_TITLE = "Non-Storable Content"
+
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
 # references while the content type cannot rule out cross-content parsing. When the
@@ -59,6 +61,27 @@ def is_html_document_response(otherinfo: str | None) -> bool:
         return False
     match = _CONTENT_TYPE_LINE_PATTERN.search(otherinfo)
     return match is not None and match.group(1).lower().startswith("text/html")
+
+
+# ZAP's "Non-Storable Content" rule (passive scanner 10049, alert ref 10049-1) raises
+# when a response is not storable by a cache. When a response carries no cache directives
+# (Expires, max-age, s-maxage, public) and its status code is not cacheable by default,
+# the rule uses the status code itself as the instance evidence. HTTP 429 (Too Many
+# Requests) is a rate-limit error response: it is transient and holds no content worth
+# caching, so flagging it as non-storable is a false positive.
+_RATE_LIMIT_STATUS_CODE = "429"
+
+
+def is_rate_limit_response(evidence: str | None) -> bool:
+    """Whether the alert's evidence is an HTTP 429 (rate-limit) status code.
+
+    Args:
+        evidence: The raw ``evidence`` of the alert instance, as produced by the ZAP rule.
+
+    Returns:
+        True when the evidence is the HTTP 429 status code, False otherwise.
+    """
+    return evidence == _RATE_LIMIT_STATUS_CODE
 
 
 def _build_technical_detail(
@@ -167,6 +190,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
 
                 if title == RELATIVE_PATH_CONFUSION_TITLE and is_html_document_response(
                     otherinfo=alert.get("otherinfo")
+                ):
+                    continue
+
+                if title == NON_STORABLE_CONTENT_TITLE and is_rate_limit_response(
+                    evidence=evidence
                 ):
                     continue
 
