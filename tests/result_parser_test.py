@@ -81,3 +81,32 @@ def testParseResults_whenRelativePathConfusionServesHtml_shouldSuppressHtmlDocum
         assert len(vulnz) == 1
         assert vulnz[0].entry.title == "Relative Path Confusion"
         assert "No Content Type was specified" in vulnz[0].technical_detail
+
+
+def testIsRateLimitResponse_when429Evidence_shouldReturnTrue() -> None:
+    """Test detection of an HTTP 429 (rate-limit) status code in the alert evidence."""
+    assert result_parser.is_rate_limit_response("429") is True
+
+
+def testIsRateLimitResponse_whenOtherEvidence_shouldReturnFalse() -> None:
+    """Test that non-rate-limit evidence is not treated as a rate-limit response."""
+    assert result_parser.is_rate_limit_response("no-store") is False
+    assert result_parser.is_rate_limit_response("private") is False
+    assert result_parser.is_rate_limit_response("Authorization:") is False
+    assert result_parser.is_rate_limit_response("500") is False
+    assert result_parser.is_rate_limit_response(None) is False
+    assert result_parser.is_rate_limit_response("") is False
+
+
+def testParseResults_whenNonStorableRateLimit_shouldSuppressRateLimitResponses() -> (
+    None
+):
+    """Test that a rate-limit Non-Storable Content alert is suppressed while a genuine one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-non-storable-rate-limit-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "Non-Storable Content"
+        assert "no-store" in vulnz[0].technical_detail
