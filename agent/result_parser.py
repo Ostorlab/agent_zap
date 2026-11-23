@@ -38,6 +38,8 @@ RELATIVE_PATH_CONFUSION_TITLE = "Relative Path Confusion"
 
 NON_STORABLE_CONTENT_TITLE = "Non-Storable Content"
 
+COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
+
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
 # references while the content type cannot rule out cross-content parsing. When the
@@ -82,6 +84,35 @@ def is_rate_limit_response(evidence: str | None) -> bool:
         True when the evidence is the HTTP 429 status code, False otherwise.
     """
     return evidence == _RATE_LIMIT_STATUS_CODE
+
+
+# ZAP's "Cookie Slack Detector" rule (active scanner 90027) drops one cookie per request
+# and compares the response length against a baseline. When re-adding all cookies still
+# does not restore the baseline, the rule reports that dropping the cookie "invalidated
+# the session" (message ascanbeta.cookieslack.session.destroyed). Hotjar's analytics
+# cookies (all "_hj"-prefixed, e.g. "_hjSessionUser_<siteId>") are third-party tracking
+# identifiers, not application session cookies: a response-length change on a static asset
+# is noise, so those alerts are false positives.
+_HOTJAR_ANALYTICS_COOKIE_PREFIX = "_hj"
+_SESSION_DESTROYED_COOKIE_PATTERN = re.compile(r"invalidated the session: \[([^\]]+)\]")
+
+
+def is_third_party_analytics_cookie(otherinfo: str | None) -> bool:
+    """Whether the alert's extra info names a Hotjar analytics cookie as the dropped session cookie.
+
+    Args:
+        otherinfo: The raw ``otherinfo`` of the alert, as produced by the ZAP rule.
+
+    Returns:
+        True when the rule reported that a Hotjar analytics cookie (``_hj*``) invalidated
+        the session, False otherwise.
+    """
+    if otherinfo is None:
+        return False
+    match = _SESSION_DESTROYED_COOKIE_PATTERN.search(otherinfo)
+    if match is None:
+        return False
+    return match.group(1).strip().lower().startswith(_HOTJAR_ANALYTICS_COOKIE_PREFIX)
 
 
 def _build_technical_detail(
@@ -167,6 +198,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
         host = site.get("@host")
         for alert in site.get("alerts"):
             title = alert.get("name")
+            if title == COOKIE_SLACK_DETECTOR_TITLE and is_third_party_analytics_cookie(
+                otherinfo=alert.get("otherinfo")
+            ):
+                continue
+
             description = md(alert.get("desc"))
             recommendation = md(alert.get("solution"))
             technical_detail_header = md(alert.get("otherinfo"))
