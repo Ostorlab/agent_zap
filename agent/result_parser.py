@@ -198,6 +198,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
         host = site.get("@host")
         for alert in site.get("alerts"):
             title = alert.get("name")
+            if title == COOKIE_SLACK_DETECTOR_TITLE and is_third_party_analytics_cookie(
+                otherinfo=alert.get("otherinfo")
+            ):
+                continue
+
             description = md(alert.get("desc"))
             recommendation = md(alert.get("solution"))
             technical_detail_header = md(alert.get("otherinfo"))
@@ -226,14 +231,6 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
 
                 if title == NON_STORABLE_CONTENT_TITLE and is_rate_limit_response(
                     evidence=evidence
-                ):
-                    continue
-
-                if (
-                    title == COOKIE_SLACK_DETECTOR_TITLE
-                    and is_third_party_analytics_cookie(
-                        otherinfo=alert.get("otherinfo")
-                    )
                 ):
                     continue
 
