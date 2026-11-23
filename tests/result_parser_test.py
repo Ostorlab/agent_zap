@@ -110,3 +110,50 @@ def testParseResults_whenNonStorableRateLimit_shouldSuppressRateLimitResponses()
         assert len(vulnz) == 1
         assert vulnz[0].entry.title == "Non-Storable Content"
         assert "no-store" in vulnz[0].technical_detail
+
+
+def testIsThirdPartyAnalyticsCookie_whenHotjarAnalyticsCookie_shouldReturnTrue() -> (
+    None
+):
+    """Test detection of a Hotjar analytics cookie in the rule's session-destroyed extra info."""
+    otherinfo = (
+        "Dropping this cookie appears to have invalidated the session: "
+        "[_hjSessionUser_2738795] A follow-on request with all original cookies still had "
+        "a different response than the original request."
+    )
+    assert result_parser.is_third_party_analytics_cookie(otherinfo) is True
+    assert (
+        result_parser.is_third_party_analytics_cookie(
+            "Dropping this cookie appears to have invalidated the session: "
+            "[_hjSession_12345] A follow-on request with all original cookies still had "
+            "a different response than the original request."
+        )
+        is True
+    )
+
+
+def testIsThirdPartyAnalyticsCookie_whenSessionCookie_shouldReturnFalse() -> None:
+    """Test that an application session cookie is not treated as a Hotjar analytics cookie."""
+    otherinfo = (
+        "Dropping this cookie appears to have invalidated the session: [JSESSIONID] "
+        "A follow-on request with all original cookies still had a different response "
+        "than the original request."
+    )
+    assert result_parser.is_third_party_analytics_cookie(otherinfo) is False
+    assert result_parser.is_third_party_analytics_cookie(None) is False
+    assert result_parser.is_third_party_analytics_cookie("") is False
+    assert result_parser.is_third_party_analytics_cookie("no cookie here") is False
+
+
+def testParseResults_whenCookieSlackFlagsHotjarCookie_shouldSuppressAnalyticsCookie() -> (
+    None
+):
+    """Test that a Hotjar analytics cookie Cookie Slack Detector alert is suppressed while a genuine one is reported."""
+    with (pathlib.Path(__file__).parent / "zap-cookie-slack-hotjar-output.json").open(
+        "r", encoding="utf-8"
+    ) as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "Cookie Slack Detector"
+        assert "JSESSIONID" in vulnz[0].technical_detail

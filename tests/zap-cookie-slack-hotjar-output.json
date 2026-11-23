@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Thu, 20 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://app.fourthfrontier.com",
+      "@host": "app.fourthfrontier.com",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "90027",
+          "alertRef": "90027",
+          "alert": "Cookie Slack Detector",
+          "name": "Cookie Slack Detector",
+          "riskcode": "0",
+          "confidence": "1",
+          "riskdesc": "Informational (Low)",
+          "desc": "<p>Repeated GET requests: drop a different cookie each time, followed by normal request with all cookies to stabilize session, compare responses against original baseline GET. This can reveal areas where cookie based authentication/attributes are not actually enforced.</p>",
+          "solution": "",
+          "reference": "<p>http://projects.webappsec.org/w/page/13246978/Threat%20Classification</p>",
+          "cweid": "205",
+          "wascid": "45",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com/images/X%20Plus%20Logo.svg?ee5e074320941267d4a74b33d2db68d8",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": ""
+            }
+          ],
+          "otherinfo": "Dropping this cookie appears to have invalidated the session: [_hjSessionUser_2738795] A follow-on request with all original cookies still had a different response than the original request."
+        },
+        {
+          "pluginid": "90027",
+          "alertRef": "90027",
+          "alert": "Cookie Slack Detector",
+          "name": "Cookie Slack Detector",
+          "riskcode": "0",
+          "confidence": "1",
+          "riskdesc": "Informational (Low)",
+          "desc": "<p>Repeated GET requests: drop a different cookie each time, followed by normal request with all cookies to stabilize session, compare responses against original baseline GET. This can reveal areas where cookie based authentication/attributes are not actually enforced.</p>",
+          "solution": "",
+          "reference": "<p>http://projects.webappsec.org/w/page/13246978/Threat%20Classification</p>",
+          "cweid": "205",
+          "wascid": "45",
+          "instances": [
+            {
+              "uri": "https://app.fourthfrontier.com/account",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": ""
+            }
+          ],
+          "otherinfo": "Dropping this cookie appears to have invalidated the session: [JSESSIONID] A follow-on request with all original cookies still had a different response than the original request."
+        }
+      ]
+    }
+  ]
+}
