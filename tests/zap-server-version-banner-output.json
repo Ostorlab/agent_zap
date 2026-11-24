@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Thu, 20 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://appbeta.fourthfrontier.com",
+      "@host": "appbeta.fourthfrontier.com",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "10036",
+          "alertRef": "10036-2",
+          "alert": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+          "name": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+          "riskcode": "1",
+          "confidence": "3",
+          "riskdesc": "Low (High)",
+          "desc": "<p>The web/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to.</p>",
+          "solution": "<p>Ensure that the web server, application server, load balancer, etc. is configured to suppress the 'Server' header or provide a generic non-descript value.</p>",
+          "reference": "<p>http://httpd.apache.org/docs/current/mod/core.html#servertokens</p><p>http://msdn.microsoft.com/en-us/library/cc738418%28VS.85%29.aspx</p>",
+          "cweid": "497",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://appbeta.fourthfrontier.com/",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "AmazonS3"
+            }
+          ],
+          "otherinfo": ""
+        },
+        {
+          "pluginid": "10036",
+          "alertRef": "10036-2",
+          "alert": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+          "name": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+          "riskcode": "1",
+          "confidence": "3",
+          "riskdesc": "Low (High)",
+          "desc": "<p>The web/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to.</p>",
+          "solution": "<p>Ensure that the web server, application server, load balancer, etc. is configured to suppress the 'Server' header or provide a generic non-descript value.</p>",
+          "reference": "<p>http://httpd.apache.org/docs/current/mod/core.html#servertokens</p><p>http://msdn.microsoft.com/en-us/library/cc738418%28VS.85%29.aspx</p>",
+          "cweid": "497",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://appbeta.fourthfrontier.com/",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "Apache/2.4.1 (Unix)"
+            }
+          ],
+          "otherinfo": ""
+        }
+      ]
+    }
+  ]
+}

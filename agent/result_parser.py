@@ -44,6 +44,9 @@ COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
 PROXY_DISCLOSURE_TITLE = "Proxy Disclosure"
 TIMESTAMP_DISCLOSURE_UNIX_TITLE = "Timestamp Disclosure - Unix"
 USER_AGENT_FUZZER_TITLE = "User Agent Fuzzer"
+SERVER_VERSION_INFO_LEAK_TITLE = (
+    'Server Leaks Version Information via "Server" HTTP Response Header Field'
+)
 
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
@@ -223,6 +226,32 @@ def is_user_agent_fuzz_without_response_difference(
     return not bool(otherinfo) and not bool(evidence)
 
 
+# ZAP's "Server Header Version Information Leak" rule (passive scanner 10036, alert ref
+# 10036-2) matches any digit in the Server response header and reports a version leak.
+# Product names that embed a digit -- e.g. Amazon S3's "AmazonS3" banner -- are
+# versionless, so those alerts are false positives. A genuine version leak carries a numeric
+# version token separated from the product name: "Apache/2.4.1 (Unix)", "nginx/1.18.0",
+# "Microsoft-IIS/10.0", "OFE/0.1" or "Oracle-Application-Server-11g".
+_VERSION_TOKEN_PATTERN = re.compile(
+    r"(?:^|[()/\s_-])\d+(?:\.\d+)*(?:\.(?:v\d+|x)|[a-z])?(?=$|[()/\s_-])", re.IGNORECASE
+)
+
+
+def is_versionless_server_banner(evidence: str | None) -> bool:
+    """Whether the alert's evidence is a Server banner with digits but no version token.
+
+    Args:
+        evidence: The raw ``evidence`` of the alert instance, i.e. the Server header value.
+
+    Returns:
+        True when the banner embeds a digit that is not part of a separated numeric version
+        token (e.g. "AmazonS3"), False otherwise.
+    """
+    if not evidence:
+        return False
+    return _VERSION_TOKEN_PATTERN.search(evidence) is None
+
+
 def _build_technical_detail(
     title: str,
     target: str,
@@ -357,6 +386,12 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                     and is_user_agent_fuzz_without_response_difference(
                         otherinfo=alert.get("otherinfo"), evidence=evidence
                     )
+                ):
+                    continue
+
+                if (
+                    title == SERVER_VERSION_INFO_LEAK_TITLE
+                    and is_versionless_server_banner(evidence=evidence)
                 ):
                     continue
 
