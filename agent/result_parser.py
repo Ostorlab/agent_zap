@@ -40,6 +40,10 @@ NON_STORABLE_CONTENT_TITLE = "Non-Storable Content"
 
 COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
 
+SERVER_VERSION_INFO_LEAK_TITLE = (
+    'Server Leaks Version Information via "Server" HTTP Response Header Field'
+)
+
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
 # references while the content type cannot rule out cross-content parsing. When the
@@ -113,6 +117,32 @@ def is_third_party_analytics_cookie(otherinfo: str | None) -> bool:
     if match is None:
         return False
     return match.group(1).strip().lower().startswith(_HOTJAR_ANALYTICS_COOKIE_PREFIX)
+
+
+# ZAP's "Server Header Version Information Leak" rule (passive scanner 10036, alert ref
+# 10036-2) matches any digit in the Server response header and reports a version leak.
+# Product names that embed a digit -- e.g. Amazon S3's "AmazonS3" banner -- are
+# versionless, so those alerts are false positives. A genuine version leak carries a numeric
+# version token separated from the product name: "Apache/2.4.1 (Unix)", "nginx/1.18.0",
+# "Microsoft-IIS/10.0", "OFE/0.1" or "Oracle-Application-Server-11g".
+_VERSION_TOKEN_PATTERN = re.compile(
+    r"(?:^|[/\-_\s])(\d+(?:\.\d+)*[a-z]?)(?=$|[/\-_\s])"
+)
+
+
+def is_versionless_server_banner(evidence: str | None) -> bool:
+    """Whether the alert's evidence is a Server banner with digits but no version token.
+
+    Args:
+        evidence: The raw ``evidence`` of the alert instance, i.e. the Server header value.
+
+    Returns:
+        True when the banner embeds a digit that is not part of a separated numeric version
+        token (e.g. "AmazonS3"), False otherwise.
+    """
+    if not evidence:
+        return False
+    return _VERSION_TOKEN_PATTERN.search(evidence) is None
 
 
 def _build_technical_detail(
@@ -231,6 +261,12 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
 
                 if title == NON_STORABLE_CONTENT_TITLE and is_rate_limit_response(
                     evidence=evidence
+                ):
+                    continue
+
+                if (
+                    title == SERVER_VERSION_INFO_LEAK_TITLE
+                    and is_versionless_server_banner(evidence=evidence)
                 ):
                     continue
 

@@ -157,3 +157,37 @@ def testParseResults_whenCookieSlackFlagsHotjarCookie_shouldSuppressAnalyticsCoo
         assert len(vulnz) == 1
         assert vulnz[0].entry.title == "Cookie Slack Detector"
         assert "JSESSIONID" in vulnz[0].technical_detail
+
+
+def testIsVersionlessServerBanner_whenAmazonS3Banner_shouldReturnTrue() -> None:
+    """Test that a Server banner with an embedded digit but no version token is detected."""
+    assert result_parser.is_versionless_server_banner("AmazonS3") is True
+
+
+def testIsVersionlessServerBanner_whenVersionedBanner_shouldReturnFalse() -> None:
+    """Test that banners carrying a separated numeric version token are not versionless."""
+    assert result_parser.is_versionless_server_banner("Apache/2.4.1 (Unix)") is False
+    assert result_parser.is_versionless_server_banner("nginx/1.18.0") is False
+    assert result_parser.is_versionless_server_banner("Microsoft-IIS/10.0") is False
+    assert result_parser.is_versionless_server_banner("OFE/0.1") is False
+    assert (
+        result_parser.is_versionless_server_banner("Oracle-Application-Server-11g")
+        is False
+    )
+    assert result_parser.is_versionless_server_banner(None) is False
+    assert result_parser.is_versionless_server_banner("") is False
+
+
+def testParseResults_whenServerBannerVersionless_shouldSuppressVersionLeak() -> None:
+    """Test that a versionless Server banner alert is suppressed while a genuine version leak is reported."""
+    with (pathlib.Path(__file__).parent / "zap-server-version-banner-output.json").open(
+        "r", encoding="utf-8"
+    ) as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert (
+            vulnz[0].entry.title
+            == 'Server Leaks Version Information via "Server" HTTP Response Header Field'
+        )
+        assert "Apache/2.4.1" in vulnz[0].technical_detail
