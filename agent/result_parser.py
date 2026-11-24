@@ -3,6 +3,7 @@
 import dataclasses
 import json
 import re
+import time
 from typing import Any
 
 from markdownify import markdownify as md
@@ -41,6 +42,7 @@ NON_STORABLE_CONTENT_TITLE = "Non-Storable Content"
 COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
 
 PROXY_DISCLOSURE_TITLE = "Proxy Disclosure"
+TIMESTAMP_DISCLOSURE_UNIX_TITLE = "Timestamp Disclosure - Unix"
 
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
@@ -167,6 +169,34 @@ def is_origin_banner_reported_as_proxy(otherinfo: str | None) -> bool:
     return set(proxy_servers).issubset(set(web_servers))
 
 
+# ZAP's "Timestamp Disclosure - Unix" rule (passive scanner 10096) matches every
+# 10-digit number (e.g. a JS bundle's build/cache-busting literal) and reports it as
+# a disclosed Unix timestamp whenever it parses to a date within roughly the last or
+# next 10 years. A number that resolves to a FUTURE date cannot be a disclosed
+# timestamp of a past event (creation/modification/registration dates are all in the
+# past); it is a coincidental numeric literal, so those alerts are false positives.
+# Genuine past-dated timestamps still report.
+
+
+def is_future_timestamp(evidence: str | None) -> bool:
+    """Whether the alert's evidence is a Unix timestamp that resolves to a future date.
+
+    Args:
+        evidence: The raw ``evidence`` of the alert instance, as produced by the ZAP rule.
+
+    Returns:
+        True when the evidence parses to an integer Unix-timestamp (seconds) that is
+        in the future, False otherwise (None, non-numeric, or a past timestamp).
+    """
+    if evidence is None:
+        return False
+    try:
+        timestamp = int(evidence)
+    except ValueError:
+        return False
+    return timestamp > int(time.time())
+
+
 def _build_technical_detail(
     title: str,
     target: str,
@@ -287,6 +317,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                     continue
 
                 if title == NON_STORABLE_CONTENT_TITLE and is_rate_limit_response(
+                    evidence=evidence
+                ):
+                    continue
+
+                if title == TIMESTAMP_DISCLOSURE_UNIX_TITLE and is_future_timestamp(
                     evidence=evidence
                 ):
                     continue

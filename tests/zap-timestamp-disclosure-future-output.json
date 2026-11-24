@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Tue, 24 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://pigment.app",
+      "@host": "pigment.app",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "10096",
+          "alertRef": "10096",
+          "alert": "Timestamp Disclosure - Unix",
+          "name": "Timestamp Disclosure - Unix",
+          "riskcode": "1",
+          "confidence": "1",
+          "riskdesc": "Low (Low)",
+          "desc": "<p>A timestamp was disclosed by the application/web server - Unix</p>",
+          "solution": "<p>Manually confirm that the timestamp data is not sensitive, and that the data cannot be aggregated to disclose exploitable patterns.</p>",
+          "reference": "<p>http://projects.webappsec.org/w/page/13246936/Information%20Leakage</p>",
+          "cweid": "497",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://pigment.app/assets/LoginPage-Bw1DR7lY.js",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "1914395348"
+            }
+          ],
+          "otherinfo": "<p>1914395348, which evaluates to: 2030-08-31 08:29:08</p>"
+        },
+        {
+          "pluginid": "10096",
+          "alertRef": "10096",
+          "alert": "Timestamp Disclosure - Unix",
+          "name": "Timestamp Disclosure - Unix",
+          "riskcode": "1",
+          "confidence": "1",
+          "riskdesc": "Low (Low)",
+          "desc": "<p>A timestamp was disclosed by the application/web server - Unix</p>",
+          "solution": "<p>Manually confirm that the timestamp data is not sensitive, and that the data cannot be aggregated to disclose exploitable patterns.</p>",
+          "reference": "<p>http://projects.webappsec.org/w/page/13246936/Information%20Leakage</p>",
+          "cweid": "497",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://pigment.app/account",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "1704114087"
+            }
+          ],
+          "otherinfo": "<p>1704114087, which evaluates to: 2024-01-01 13:01:27</p>"
+        }
+      ]
+    }
+  ]
+}

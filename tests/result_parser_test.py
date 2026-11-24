@@ -2,6 +2,7 @@
 
 import json
 import pathlib
+import time
 
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 
@@ -157,6 +158,40 @@ def testParseResults_whenCookieSlackFlagsHotjarCookie_shouldSuppressAnalyticsCoo
         assert len(vulnz) == 1
         assert vulnz[0].entry.title == "Cookie Slack Detector"
         assert "JSESSIONID" in vulnz[0].technical_detail
+
+
+def testIsFutureTimestamp_whenFutureEpoch_shouldReturnTrue() -> None:
+    """Test detection of an evidence value that parses to a future Unix timestamp."""
+    future = int(time.time()) + 10_000_000
+    assert result_parser.is_future_timestamp(str(future)) is True
+
+
+def testIsFutureTimestamp_whenPastOrInvalid_shouldReturnFalse() -> None:
+    """Test that past and non-numeric evidence is not treated as a future timestamp."""
+    past = int(time.time()) - 10_000_000
+    assert result_parser.is_future_timestamp(str(past)) is False
+    assert result_parser.is_future_timestamp("1704114087") is False
+    assert result_parser.is_future_timestamp(None) is False
+    assert result_parser.is_future_timestamp("") is False
+    assert result_parser.is_future_timestamp("not-a-timestamp") is False
+    assert result_parser.is_future_timestamp("123") is False
+
+
+def testParseResults_whenTimestampDisclosureResolvesToFuture_shouldSuppressFutureTimestamps() -> (
+    None
+):
+    """Test that a future-dated Timestamp Disclosure - Unix alert is suppressed while a past-dated one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-timestamp-disclosure-future-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+
+    future_instance = results["site"][0]["alerts"][0]["instances"][0]
+    future_instance["evidence"] = str(int(time.time()) + 10_000_000)
+    vulnz = list(result_parser.parse_results(results))
+    assert len(vulnz) == 1
+    assert vulnz[0].entry.title == "Timestamp Disclosure - Unix"
+    assert "1704114087" in vulnz[0].technical_detail
 
 
 def testIsOriginBannerReportedAsProxy_whenSameBanner_shouldReturnTrue() -> None:
