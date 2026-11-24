@@ -40,6 +40,8 @@ NON_STORABLE_CONTENT_TITLE = "Non-Storable Content"
 
 COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
 
+USER_AGENT_FUZZER_TITLE = "User Agent Fuzzer"
+
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
 # references while the content type cannot rule out cross-content parsing. When the
@@ -113,6 +115,31 @@ def is_third_party_analytics_cookie(otherinfo: str | None) -> bool:
     if match is None:
         return False
     return match.group(1).strip().lower().startswith(_HOTJAR_ANALYTICS_COOKIE_PREFIX)
+
+
+# ZAP's "User Agent Fuzzer" rule (active scanner 10104) sends requests with fuzzed
+# User-Agent values and compares the response status code and the hash of the response
+# body against the original response. The alert it raises, however, only records the
+# fuzzed request itself (param "Header User-Agent" + attack = the fuzzed User-Agent):
+# neither the baseline response, the fuzzed response, nor the status / body-hash
+# comparison is part of the payload, so the rule's premise -- an observed response
+# difference -- is never demonstrated. On modern dynamic sites the body hash changes
+# between any two requests, so the rule fires on benign pages whose content is not
+# User-Agent dependent.
+def is_user_agent_fuzz_without_response_difference(
+    otherinfo: str | None, evidence: str | None
+) -> bool:
+    """Whether a User Agent Fuzzer alert stores no demonstration of a response difference.
+
+    Args:
+        otherinfo: The raw ``otherinfo`` of the alert, as produced by the ZAP rule.
+        evidence: The raw ``evidence`` of the alert instance, as produced by the ZAP rule.
+
+    Returns:
+        True when the alert payload carries neither extra info nor evidence that could
+        evidence a response difference, False otherwise.
+    """
+    return not bool(otherinfo) and not bool(evidence)
 
 
 def _build_technical_detail(
@@ -231,6 +258,14 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
 
                 if title == NON_STORABLE_CONTENT_TITLE and is_rate_limit_response(
                     evidence=evidence
+                ):
+                    continue
+
+                if (
+                    title == USER_AGENT_FUZZER_TITLE
+                    and is_user_agent_fuzz_without_response_difference(
+                        otherinfo=alert.get("otherinfo"), evidence=evidence
+                    )
                 ):
                     continue
 
