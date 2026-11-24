@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Tue, 24 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://beapply-dev.americanexpress.com",
+      "@host": "beapply-dev.americanexpress.com",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "40025",
+          "alertRef": "40025-2",
+          "alert": "Proxy Disclosure",
+          "name": "Proxy Disclosure",
+          "riskcode": "2",
+          "confidence": "2",
+          "riskdesc": "Medium (Medium)",
+          "desc": "<p>1 proxy server(s) were detected or fingerprinted. This information helps a potential attacker to determine</p><ul><li>A list of targets for an attack against the application.</li><li>Potential vulnerabilities on the proxy servers that service the application.</li><li>The presence or absence of any proxy-based components that might cause attacks against the application to be detected, prevented, or mitigated.</li></ul>",
+          "solution": "<p>Disable the 'TRACE' method on the proxy servers, as well as the origin web/application server. Disable the 'OPTIONS' method on the proxy servers, as well as the origin web/application server, if it is not required for other purposes, such as 'CORS' (Cross Origin Resource Sharing). Configure the web and application servers with custom error pages, to prevent 'fingerprintable' product-specific error pages being leaked to the user in the event of HTTP errors, such as 'TRACK' requests for non-existent pages.</p>",
+          "reference": "<p>https://datatracker.ietf.org/doc/html/rfc7231#section-5.1.2</p>",
+          "cweid": "204",
+          "wascid": "45",
+          "instances": [
+            {
+              "uri": "https://beapply-dev.americanexpress.com",
+              "method": "GET",
+              "param": "",
+              "attack": "TRACE, OPTIONS methods with 'Max-Forwards' header. TRACK method.",
+              "evidence": "TRACE, OPTIONS methods with 'Max-Forwards' header. TRACK method."
+            }
+          ],
+          "otherinfo": "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been identified between ZAP and the application/web server:\n- AMEX\n\nThe following web/application server has been identified:\n- AMEX\n"
+        },
+        {
+          "pluginid": "40025",
+          "alertRef": "40025-2",
+          "alert": "Proxy Disclosure",
+          "name": "Proxy Disclosure",
+          "riskcode": "2",
+          "confidence": "2",
+          "riskdesc": "Medium (Medium)",
+          "desc": "<p>1 proxy server(s) were detected or fingerprinted. This information helps a potential attacker to determine</p><ul><li>A list of targets for an attack against the application.</li><li>Potential vulnerabilities on the proxy servers that service the application.</li><li>The presence or absence of any proxy-based components that might cause attacks against the application to be detected, prevented, or mitigated.</li></ul>",
+          "solution": "<p>Disable the 'TRACE' method on the proxy servers, as well as the origin web/application server. Disable the 'OPTIONS' method on the proxy servers, as well as the origin web/application server, if it is not required for other purposes, such as 'CORS' (Cross Origin Resource Sharing). Configure the web and application servers with custom error pages, to prevent 'fingerprintable' product-specific error pages being leaked to the user in the event of HTTP errors, such as 'TRACK' requests for non-existent pages.</p>",
+          "reference": "<p>https://datatracker.ietf.org/doc/html/rfc7231#section-5.1.2</p>",
+          "cweid": "204",
+          "wascid": "45",
+          "instances": [
+            {
+              "uri": "https://beapply-dev.americanexpress.com",
+              "method": "GET",
+              "param": "",
+              "attack": "TRACE, OPTIONS methods with 'Max-Forwards' header. TRACK method.",
+              "evidence": "TRACE, OPTIONS methods with 'Max-Forwards' header. TRACK method."
+            }
+          ],
+          "otherinfo": "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been identified between ZAP and the application/web server:\n- nginx/1.22\n\nThe following web/application server has been identified:\n- Apache/2.4.58\n"
+        }
+      ]
+    }
+  ]
+}
