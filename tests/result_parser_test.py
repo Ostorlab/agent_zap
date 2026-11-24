@@ -2,6 +2,7 @@
 
 import json
 import pathlib
+import time
 
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 
@@ -145,6 +146,62 @@ def testIsThirdPartyAnalyticsCookie_whenSessionCookie_shouldReturnFalse() -> Non
     assert result_parser.is_third_party_analytics_cookie("no cookie here") is False
 
 
+def testIsUserAgentFuzzWithoutResponseDifference_whenNoDifferenceStored_shouldReturnTrue() -> (
+    None
+):
+    """Test detection of a User Agent Fuzzer alert that records no response difference."""
+    assert result_parser.is_user_agent_fuzz_without_response_difference("", "") is True
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference(None, None) is True
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference("", None) is True
+    )
+
+
+def testIsUserAgentFuzzWithoutResponseDifference_whenDifferenceStored_shouldReturnFalse() -> (
+    None
+):
+    """Test that a User Agent Fuzzer alert that demonstrates a response difference is not suppressed."""
+    otherinfo = "A response difference was observed for the fuzzed User-Agent."
+    evidence = (
+        "The response status code changed from 200 to 429 and the response body "
+        "hash differed from the original response."
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference(
+            otherinfo, evidence
+        )
+        is False
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference(otherinfo, "")
+        is False
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference("", evidence)
+        is False
+    )
+
+
+def testParseResults_whenUserAgentFuzzerWithoutResponseDifference_shouldSuppress() -> (
+    None
+):
+    """Test that a User Agent Fuzzer alert storing no response difference is suppressed while one demonstrating a difference is reported."""
+    with (pathlib.Path(__file__).parent / "zap-user-agent-fuzzer-output.json").open(
+        "r", encoding="utf-8"
+    ) as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "User Agent Fuzzer"
+        assert "Googlebot" in vulnz[0].technical_detail
+        assert (
+            "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)"
+            not in vulnz[0].technical_detail
+        )
+
+
 def testParseResults_whenCookieSlackFlagsHotjarCookie_shouldSuppressAnalyticsCookie() -> (
     None
 ):
@@ -157,6 +214,113 @@ def testParseResults_whenCookieSlackFlagsHotjarCookie_shouldSuppressAnalyticsCoo
         assert len(vulnz) == 1
         assert vulnz[0].entry.title == "Cookie Slack Detector"
         assert "JSESSIONID" in vulnz[0].technical_detail
+
+
+def testIsFutureTimestamp_whenFutureEpoch_shouldReturnTrue() -> None:
+    """Test detection of an evidence value that parses to a future Unix timestamp."""
+    future = int(time.time()) + 10_000_000
+    assert result_parser.is_future_timestamp(str(future)) is True
+
+
+def testIsFutureTimestamp_whenPastOrInvalid_shouldReturnFalse() -> None:
+    """Test that past and non-numeric evidence is not treated as a future timestamp."""
+    past = int(time.time()) - 10_000_000
+    assert result_parser.is_future_timestamp(str(past)) is False
+    assert result_parser.is_future_timestamp("1704114087") is False
+    assert result_parser.is_future_timestamp(None) is False
+    assert result_parser.is_future_timestamp("") is False
+    assert result_parser.is_future_timestamp("not-a-timestamp") is False
+    assert result_parser.is_future_timestamp("123") is False
+
+
+def testParseResults_whenTimestampDisclosureResolvesToFuture_shouldSuppressFutureTimestamps() -> (
+    None
+):
+    """Test that a future-dated Timestamp Disclosure - Unix alert is suppressed while a past-dated one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-timestamp-disclosure-future-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+
+    future_instance = results["site"][0]["alerts"][0]["instances"][0]
+    future_instance["evidence"] = str(int(time.time()) + 10_000_000)
+    vulnz = list(result_parser.parse_results(results))
+    assert len(vulnz) == 1
+    assert vulnz[0].entry.title == "Timestamp Disclosure - Unix"
+    assert "1704114087" in vulnz[0].technical_detail
+
+
+def testIsOriginBannerReportedAsProxy_whenSameBanner_shouldReturnTrue() -> None:
+    """Test detection of the origin's own banner being listed as an intermediate proxy."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- AMEX\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- AMEX\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is True
+
+
+def testIsOriginBannerReportedAsProxy_whenDistinctProxy_shouldReturnFalse() -> None:
+    """Test that a genuine intermediate proxy with a distinct banner is not suppressed."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- nginx/1.22\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- Apache/2.4.58\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is False
+    assert result_parser.is_origin_banner_reported_as_proxy(None) is False
+    assert result_parser.is_origin_banner_reported_as_proxy("") is False
+
+
+def testIsOriginBannerReportedAsProxy_whenPartialMatch_shouldReturnFalse() -> None:
+    """Test that a real proxy mixed with the origin banner is still reported."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- AMEX\n"
+        "- nginx/1.22\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- AMEX\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is False
+
+
+def testIsOriginBannerReportedAsProxy_whenSilentProxy_shouldReturnFalse() -> None:
+    """Test that a 'silent' proxy keeps the alert reported even when the banner matches."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- AMEX\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- AMEX\n"
+        "\n"
+        "The following 'silent' proxy servers were identified. Due to their behaviour, it is "
+        "not known at which point in the network topology these proxy servers reside:\n"
+        "- Citrix NetScaler\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is False
+
+
+def testParseResults_whenProxyDisclosureShowsOriginBanner_shouldSuppressOriginBanner() -> (
+    None
+):
+    """Test that an origin-banner Proxy Disclosure alert is suppressed while a genuine one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-proxy-disclosure-origin-banner-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "Proxy Disclosure"
+        assert "Apache/2.4.58" in vulnz[0].technical_detail
 
 
 def testIsVersionlessServerBanner_whenAmazonS3Banner_shouldReturnTrue() -> None:

@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Thu, 24 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://vault.ostorlab.app",
+      "@host": "vault.ostorlab.app",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "10104",
+          "alertRef": "10104",
+          "alert": "User Agent Fuzzer",
+          "name": "User Agent Fuzzer",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>Check for differences in response based on fuzzed User Agent (eg. mobile sites, access as a Search Engine Crawler). Compares the response statuscode and the hashcode of the response body with the original response.</p>",
+          "solution": "",
+          "reference": "<p>https://owasp.org/projects/web-security-testing-guide</p>",
+          "cweid": "0",
+          "wascid": "0",
+          "instances": [
+            {
+              "uri": "https://vault.ostorlab.app",
+              "method": "GET",
+              "param": "Header User-Agent",
+              "attack": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
+              "evidence": ""
+            }
+          ],
+          "otherinfo": ""
+        },
+        {
+          "pluginid": "10104",
+          "alertRef": "10104",
+          "alert": "User Agent Fuzzer",
+          "name": "User Agent Fuzzer",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>Check for differences in response based on fuzzed User Agent (eg. mobile sites, access as a Search Engine Crawler). Compares the response statuscode and the hashcode of the response body with the original response.</p>",
+          "solution": "",
+          "reference": "<p>https://owasp.org/projects/web-security-testing-guide</p>",
+          "cweid": "0",
+          "wascid": "0",
+          "instances": [
+            {
+              "uri": "https://vault.ostorlab.app/fuzz",
+              "method": "GET",
+              "param": "Header User-Agent",
+              "attack": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+              "evidence": "The response status code changed from 200 to 429 and the response body hash differed from the original response."
+            }
+          ],
+          "otherinfo": "A response difference was observed for the fuzzed User-Agent."
+        }
+      ]
+    }
+  ]
+}
