@@ -2,6 +2,7 @@
 
 import json
 import pathlib
+import time
 
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 
@@ -213,3 +214,110 @@ def testParseResults_whenCookieSlackFlagsHotjarCookie_shouldSuppressAnalyticsCoo
         assert len(vulnz) == 1
         assert vulnz[0].entry.title == "Cookie Slack Detector"
         assert "JSESSIONID" in vulnz[0].technical_detail
+
+
+def testIsFutureTimestamp_whenFutureEpoch_shouldReturnTrue() -> None:
+    """Test detection of an evidence value that parses to a future Unix timestamp."""
+    future = int(time.time()) + 10_000_000
+    assert result_parser.is_future_timestamp(str(future)) is True
+
+
+def testIsFutureTimestamp_whenPastOrInvalid_shouldReturnFalse() -> None:
+    """Test that past and non-numeric evidence is not treated as a future timestamp."""
+    past = int(time.time()) - 10_000_000
+    assert result_parser.is_future_timestamp(str(past)) is False
+    assert result_parser.is_future_timestamp("1704114087") is False
+    assert result_parser.is_future_timestamp(None) is False
+    assert result_parser.is_future_timestamp("") is False
+    assert result_parser.is_future_timestamp("not-a-timestamp") is False
+    assert result_parser.is_future_timestamp("123") is False
+
+
+def testParseResults_whenTimestampDisclosureResolvesToFuture_shouldSuppressFutureTimestamps() -> (
+    None
+):
+    """Test that a future-dated Timestamp Disclosure - Unix alert is suppressed while a past-dated one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-timestamp-disclosure-future-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+
+    future_instance = results["site"][0]["alerts"][0]["instances"][0]
+    future_instance["evidence"] = str(int(time.time()) + 10_000_000)
+    vulnz = list(result_parser.parse_results(results))
+    assert len(vulnz) == 1
+    assert vulnz[0].entry.title == "Timestamp Disclosure - Unix"
+    assert "1704114087" in vulnz[0].technical_detail
+
+
+def testIsOriginBannerReportedAsProxy_whenSameBanner_shouldReturnTrue() -> None:
+    """Test detection of the origin's own banner being listed as an intermediate proxy."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- AMEX\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- AMEX\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is True
+
+
+def testIsOriginBannerReportedAsProxy_whenDistinctProxy_shouldReturnFalse() -> None:
+    """Test that a genuine intermediate proxy with a distinct banner is not suppressed."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- nginx/1.22\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- Apache/2.4.58\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is False
+    assert result_parser.is_origin_banner_reported_as_proxy(None) is False
+    assert result_parser.is_origin_banner_reported_as_proxy("") is False
+
+
+def testIsOriginBannerReportedAsProxy_whenPartialMatch_shouldReturnFalse() -> None:
+    """Test that a real proxy mixed with the origin banner is still reported."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- AMEX\n"
+        "- nginx/1.22\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- AMEX\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is False
+
+
+def testIsOriginBannerReportedAsProxy_whenSilentProxy_shouldReturnFalse() -> None:
+    """Test that a 'silent' proxy keeps the alert reported even when the banner matches."""
+    otherinfo = (
+        "Using the TRACE, OPTIONS, and TRACK methods, the following proxy servers have been "
+        "identified between ZAP and the application/web server:\n"
+        "- AMEX\n"
+        "\n"
+        "The following web/application server has been identified:\n"
+        "- AMEX\n"
+        "\n"
+        "The following 'silent' proxy servers were identified. Due to their behaviour, it is "
+        "not known at which point in the network topology these proxy servers reside:\n"
+        "- Citrix NetScaler\n"
+    )
+    assert result_parser.is_origin_banner_reported_as_proxy(otherinfo) is False
+
+
+def testParseResults_whenProxyDisclosureShowsOriginBanner_shouldSuppressOriginBanner() -> (
+    None
+):
+    """Test that an origin-banner Proxy Disclosure alert is suppressed while a genuine one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-proxy-disclosure-origin-banner-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "Proxy Disclosure"
+        assert "Apache/2.4.58" in vulnz[0].technical_detail

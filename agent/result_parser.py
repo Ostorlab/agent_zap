@@ -3,6 +3,7 @@
 import dataclasses
 import json
 import re
+import time
 from typing import Any
 
 from markdownify import markdownify as md
@@ -40,6 +41,8 @@ NON_STORABLE_CONTENT_TITLE = "Non-Storable Content"
 
 COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
 
+PROXY_DISCLOSURE_TITLE = "Proxy Disclosure"
+TIMESTAMP_DISCLOSURE_UNIX_TITLE = "Timestamp Disclosure - Unix"
 USER_AGENT_FUZZER_TITLE = "User Agent Fuzzer"
 
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
@@ -115,6 +118,84 @@ def is_third_party_analytics_cookie(otherinfo: str | None) -> bool:
     if match is None:
         return False
     return match.group(1).strip().lower().startswith(_HOTJAR_ANALYTICS_COOKIE_PREFIX)
+
+
+# ZAP's "Proxy Disclosure" rule (active scanner 40025) walks the path between ZAP and the
+# origin by sending TRACE/OPTIONS requests with increasing "Max-Forwards" values and records
+# a new node whenever the Server banner (or the response status code) changes between
+# iterations; a TRACK request to a random path fingerprints the origin server. An origin
+# that answers the different Max-Forwards iterations with different status codes while
+# keeping its own banner is recorded twice: once in the "proxy servers" list and once as the
+# "web/application server". When every identified "proxy" carries exactly the origin's own
+# banner, there is no distinct intermediate hop, so those alerts are false positives.
+_PROXY_SERVERS_SECTION_HEADER = "the following proxy servers have been identified"
+_WEB_SERVER_SECTION_HEADER = "the following web/application server has been identified"
+_SILENT_PROXY_SECTION_HEADER = "proxy servers were identified"
+_SECTION_BULLET_PREFIX = "- "
+
+
+def is_origin_banner_reported_as_proxy(otherinfo: str | None) -> bool:
+    """Whether the rule's extra info lists only the origin's own banner as the proxy.
+
+    Args:
+        otherinfo: The raw ``otherinfo`` of the alert, as produced by the ZAP rule.
+
+    Returns:
+        True when every identified "proxy server" carries the same identifier(s) as the
+        "web/application server" and no 'silent' proxy is reported, False otherwise.
+    """
+    if otherinfo is None:
+        return False
+    lowered = otherinfo.lower()
+    if _SILENT_PROXY_SECTION_HEADER in lowered:
+        return False
+    proxy_servers: list[str] = []
+    web_servers: list[str] = []
+    in_proxy_section = False
+    in_web_section = False
+    for line in otherinfo.splitlines():
+        lowered_line = line.lower()
+        if _PROXY_SERVERS_SECTION_HEADER in lowered_line:
+            in_proxy_section = True
+            in_web_section = False
+        elif _WEB_SERVER_SECTION_HEADER in lowered_line:
+            in_proxy_section = False
+            in_web_section = True
+        elif in_proxy_section and line.startswith(_SECTION_BULLET_PREFIX):
+            proxy_servers.append(line[len(_SECTION_BULLET_PREFIX) :].strip())
+        elif in_web_section and line.startswith(_SECTION_BULLET_PREFIX):
+            web_servers.append(line[len(_SECTION_BULLET_PREFIX) :].strip())
+    if not proxy_servers or not web_servers:
+        return False
+    return set(proxy_servers).issubset(set(web_servers))
+
+
+# ZAP's "Timestamp Disclosure - Unix" rule (passive scanner 10096) matches every
+# 10-digit number (e.g. a JS bundle's build/cache-busting literal) and reports it as
+# a disclosed Unix timestamp whenever it parses to a date within roughly the last or
+# next 10 years. A number that resolves to a FUTURE date cannot be a disclosed
+# timestamp of a past event (creation/modification/registration dates are all in the
+# past); it is a coincidental numeric literal, so those alerts are false positives.
+# Genuine past-dated timestamps still report.
+
+
+def is_future_timestamp(evidence: str | None) -> bool:
+    """Whether the alert's evidence is a Unix timestamp that resolves to a future date.
+
+    Args:
+        evidence: The raw ``evidence`` of the alert instance, as produced by the ZAP rule.
+
+    Returns:
+        True when the evidence parses to an integer Unix-timestamp (seconds) that is
+        in the future, False otherwise (None, non-numeric, or a past timestamp).
+    """
+    if evidence is None:
+        return False
+    try:
+        timestamp = int(evidence)
+    except ValueError:
+        return False
+    return timestamp > int(time.time())
 
 
 # ZAP's "User Agent Fuzzer" rule (active scanner 10104) sends requests with fuzzed
@@ -230,6 +311,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
             ):
                 continue
 
+            if title == PROXY_DISCLOSURE_TITLE and is_origin_banner_reported_as_proxy(
+                otherinfo=alert.get("otherinfo")
+            ):
+                continue
+
             description = md(alert.get("desc"))
             recommendation = md(alert.get("solution"))
             technical_detail_header = md(alert.get("otherinfo"))
@@ -257,6 +343,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                     continue
 
                 if title == NON_STORABLE_CONTENT_TITLE and is_rate_limit_response(
+                    evidence=evidence
+                ):
+                    continue
+
+                if title == TIMESTAMP_DISCLOSURE_UNIX_TITLE and is_future_timestamp(
                     evidence=evidence
                 ):
                     continue
