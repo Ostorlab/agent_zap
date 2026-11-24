@@ -146,6 +146,62 @@ def testIsThirdPartyAnalyticsCookie_whenSessionCookie_shouldReturnFalse() -> Non
     assert result_parser.is_third_party_analytics_cookie("no cookie here") is False
 
 
+def testIsUserAgentFuzzWithoutResponseDifference_whenNoDifferenceStored_shouldReturnTrue() -> (
+    None
+):
+    """Test detection of a User Agent Fuzzer alert that records no response difference."""
+    assert result_parser.is_user_agent_fuzz_without_response_difference("", "") is True
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference(None, None) is True
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference("", None) is True
+    )
+
+
+def testIsUserAgentFuzzWithoutResponseDifference_whenDifferenceStored_shouldReturnFalse() -> (
+    None
+):
+    """Test that a User Agent Fuzzer alert that demonstrates a response difference is not suppressed."""
+    otherinfo = "A response difference was observed for the fuzzed User-Agent."
+    evidence = (
+        "The response status code changed from 200 to 429 and the response body "
+        "hash differed from the original response."
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference(
+            otherinfo, evidence
+        )
+        is False
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference(otherinfo, "")
+        is False
+    )
+    assert (
+        result_parser.is_user_agent_fuzz_without_response_difference("", evidence)
+        is False
+    )
+
+
+def testParseResults_whenUserAgentFuzzerWithoutResponseDifference_shouldSuppress() -> (
+    None
+):
+    """Test that a User Agent Fuzzer alert storing no response difference is suppressed while one demonstrating a difference is reported."""
+    with (pathlib.Path(__file__).parent / "zap-user-agent-fuzzer-output.json").open(
+        "r", encoding="utf-8"
+    ) as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "User Agent Fuzzer"
+        assert "Googlebot" in vulnz[0].technical_detail
+        assert (
+            "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)"
+            not in vulnz[0].technical_detail
+        )
+
+
 def testParseResults_whenCookieSlackFlagsHotjarCookie_shouldSuppressAnalyticsCookie() -> (
     None
 ):
