@@ -126,7 +126,7 @@ def is_third_party_analytics_cookie(otherinfo: str | None) -> bool:
 # version token separated from the product name: "Apache/2.4.1 (Unix)", "nginx/1.18.0",
 # "Microsoft-IIS/10.0", "OFE/0.1" or "Oracle-Application-Server-11g".
 _VERSION_TOKEN_PATTERN = re.compile(
-    r"(?:^|[/\-_\s])(\d+(?:\.\d+)*[a-z]?)(?=$|[/\-_\s])"
+    r"(?:^|[()/\s_-])\d+(?:\.\d+)*(?:\.(?:v\d+|x)|[a-z])?(?=$|[()/\s_-])", re.IGNORECASE
 )
 
 

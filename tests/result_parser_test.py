@@ -171,6 +171,11 @@ def testIsVersionlessServerBanner_whenVersionedBanner_shouldReturnFalse() -> Non
     assert result_parser.is_versionless_server_banner("Microsoft-IIS/10.0") is False
     assert result_parser.is_versionless_server_banner("OFE/0.1") is False
     assert (
+        result_parser.is_versionless_server_banner("Jetty(9.4.39.v20210325)") is False
+    )
+    assert result_parser.is_versionless_server_banner("Jetty(11.0.15)") is False
+    assert result_parser.is_versionless_server_banner("Apache/2.4.x") is False
+    assert (
         result_parser.is_versionless_server_banner("Oracle-Application-Server-11g")
         is False
     )
