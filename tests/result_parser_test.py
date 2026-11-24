@@ -164,8 +164,6 @@ def testIsFutureTimestamp_whenFutureEpoch_shouldReturnTrue() -> None:
     """Test detection of an evidence value that parses to a future Unix timestamp."""
     future = int(time.time()) + 10_000_000
     assert result_parser.is_future_timestamp(str(future)) is True
-    # The login-page JS bundle literal reported on pigment.app (resolves to 2030-08-31).
-    assert result_parser.is_future_timestamp("1914395348") is True
 
 
 def testIsFutureTimestamp_whenPastOrInvalid_shouldReturnFalse() -> None:
@@ -187,10 +185,13 @@ def testParseResults_whenTimestampDisclosureResolvesToFuture_shouldSuppressFutur
         pathlib.Path(__file__).parent / "zap-timestamp-disclosure-future-output.json"
     ).open("r", encoding="utf-8") as o:
         results = json.load(o)
-        vulnz = list(result_parser.parse_results(results))
-        assert len(vulnz) == 1
-        assert vulnz[0].entry.title == "Timestamp Disclosure - Unix"
-        assert "1704114087" in vulnz[0].technical_detail
+
+    future_instance = results["site"][0]["alerts"][0]["instances"][0]
+    future_instance["evidence"] = str(int(time.time()) + 10_000_000)
+    vulnz = list(result_parser.parse_results(results))
+    assert len(vulnz) == 1
+    assert vulnz[0].entry.title == "Timestamp Disclosure - Unix"
+    assert "1704114087" in vulnz[0].technical_detail
 
 
 def testIsOriginBannerReportedAsProxy_whenSameBanner_shouldReturnTrue() -> None:
