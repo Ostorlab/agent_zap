@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Thu, 26 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://pigment.app",
+      "@host": "pigment.app",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "10049",
+          "alertRef": "10049-3",
+          "alert": "Storable and Cacheable Content",
+          "name": "Storable and Cacheable Content",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>The response contents are storable by caching components such as proxy servers, and may be retrieved directly from the cache, rather than from the origin server by the caching servers, in response to similar requests from other users. If the response data is sensitive, personal or user-specific, this may result in sensitive information being leaked. In some cases, this may even result in a user gaining complete control of the session of another user, depending on the configuration of the caching components in use in their environment. This is primarily an issue where &quot;shared&quot; caching servers such as &quot;proxy&quot; caches are configured on the local network. This configuration is typically found in corporate or educational environments, for instance.</p>",
+          "solution": "<p>Validate that the response does not contain sensitive, personal or user-specific information. If it does, consider the use of the following HTTP response headers, to limit, or prevent the content being stored and retrieved from the cache by another user:<br>Cache-Control: no-cache, no-store, must-revalidate, private<br>Pragma: no-cache<br>Expires: 0<br>This configuration directs both HTTP 1.0 and HTTP 1.1 (and later) caching servers to not store the response, and to not serve the response without first revalidation by the client.</p>",
+          "reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234<br>https://datatracker.ietf.org/doc/html/rfc7231<br>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+          "cweid": "524",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://pigment.app/assets/CypressDebug-D5vcAvqv.js",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "max-age=31536000"
+            }
+          ],
+          "otherinfo": ""
+        },
+        {
+          "pluginid": "10049",
+          "alertRef": "10049-3",
+          "alert": "Storable and Cacheable Content",
+          "name": "Storable and Cacheable Content",
+          "riskcode": "0",
+          "confidence": "2",
+          "riskdesc": "Informational (Medium)",
+          "desc": "<p>The response contents are storable by caching components such as proxy servers, and may be retrieved directly from the cache, rather than from the origin server by the caching servers, in response to similar requests from other users. If the response data is sensitive, personal or user-specific, this may result in sensitive information being leaked. In some cases, this may even result in a user gaining complete control of the session of another user, depending on the configuration of the caching components in use in their environment. This is primarily an issue where &quot;shared&quot; caching servers such as &quot;proxy&quot; caches are configured on the local network. This configuration is typically found in corporate or educational environments, for instance.</p>",
+          "solution": "<p>Validate that the response does not contain sensitive, personal or user-specific information. If it does, consider the use of the following HTTP response headers, to limit, or prevent the content being stored and retrieved from the cache by another user:<br>Cache-Control: no-cache, no-store, must-revalidate, private<br>Pragma: no-cache<br>Expires: 0<br>This configuration directs both HTTP 1.0 and HTTP 1.1 (and later) caching servers to not store the response, and to not serve the response without first revalidation by the client.</p>",
+          "reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234<br>https://datatracker.ietf.org/doc/html/rfc7231<br>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+          "cweid": "524",
+          "wascid": "13",
+          "instances": [
+            {
+              "uri": "https://pigment.app/account",
+              "method": "GET",
+              "param": "",
+              "attack": "",
+              "evidence": "max-age=31536000"
+            }
+          ],
+          "otherinfo": ""
+        }
+      ]
+    }
+  ]
+}

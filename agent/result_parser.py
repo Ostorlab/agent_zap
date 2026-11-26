@@ -39,6 +39,8 @@ RELATIVE_PATH_CONFUSION_TITLE = "Relative Path Confusion"
 
 NON_STORABLE_CONTENT_TITLE = "Non-Storable Content"
 
+STORABLE_AND_CACHEABLE_TITLE = "Storable and Cacheable Content"
+
 COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
 
 PROXY_DISCLOSURE_TITLE = "Proxy Disclosure"
@@ -92,6 +94,49 @@ def is_rate_limit_response(evidence: str | None) -> bool:
         True when the evidence is the HTTP 429 status code, False otherwise.
     """
     return evidence == _RATE_LIMIT_STATUS_CODE
+
+
+# ZAP's "Storable and Cacheable Content" rule (passive scanner 10049, alert ref 10049-3,
+# CacheableScanRule) flags any response carrying cache directives (Expires / max-age /
+# s-maxage / public) as storable and cacheable, warning that a shared cache could serve the
+# content to other users. A content-hashed immutable static asset -- bundler output such as
+# "CypressDebug-D5vcAvqv.js" -- is public and identical for every user, and is deliberately
+# served with a long-lived cache (max-age=31536000) so browsers and caches hold it forever.
+# Caching such an asset cannot leak sensitive or user-specific data, so those alerts are
+# false positives. Genuine storable-and-cacheable responses (dynamic or user-specific
+# content) still report.
+_STATIC_ASSET_CONTENT_HASH_PATTERN = re.compile(
+    r"/[^/]*[._-][A-Za-z0-9_-]{6,}\.(?:js|mjs|cjs|css|png|jpe?g|gif|svg|webp|woff2?|ttf|eot|map|json)$",
+    re.IGNORECASE,
+)
+_MAX_AGE_PATTERN = re.compile(r"max-age\s*=\s*(\d+)", re.IGNORECASE)
+_IMMUTABLE_MAX_AGE_SECONDS = (
+    31536000  # one year; the standard "immutable" cache lifetime.
+)
+
+
+def is_immutable_static_asset(uri: str | None, evidence: str | None) -> bool:
+    """Whether the response is an immutable content-hashed static asset with a long-lived cache.
+
+    Args:
+        uri: The raw ``uri`` of the alert instance.
+        evidence: The raw ``evidence`` of the alert instance (the cache directives).
+
+    Returns:
+        True when the URI names a content-hashed static asset (``<name>-<hash>.<ext>``) served
+        with a ``max-age`` of at least one year, False otherwise.
+    """
+    if not uri or not evidence:
+        return False
+    if _STATIC_ASSET_CONTENT_HASH_PATTERN.search(uri) is None:
+        return False
+    match = _MAX_AGE_PATTERN.search(evidence)
+    if match is None:
+        return False
+    try:
+        return int(match.group(1)) >= _IMMUTABLE_MAX_AGE_SECONDS
+    except ValueError:
+        return False
 
 
 # ZAP's "Cookie Slack Detector" rule (active scanner 90027) drops one cookie per request
@@ -373,6 +418,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
 
                 if title == NON_STORABLE_CONTENT_TITLE and is_rate_limit_response(
                     evidence=evidence
+                ):
+                    continue
+
+                if title == STORABLE_AND_CACHEABLE_TITLE and is_immutable_static_asset(
+                    uri=uri, evidence=evidence
                 ):
                     continue
 

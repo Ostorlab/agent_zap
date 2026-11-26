@@ -113,6 +113,85 @@ def testParseResults_whenNonStorableRateLimit_shouldSuppressRateLimitResponses()
         assert "no-store" in vulnz[0].technical_detail
 
 
+def testIsImmutableStaticAsset_whenContentHashedAssetWithYearCache_shouldReturnTrue() -> (
+    None
+):
+    """Test detection of a content-hashed immutable static asset served with a one-year cache."""
+    assert (
+        result_parser.is_immutable_static_asset(
+            "https://pigment.app/assets/CypressDebug-D5vcAvqv.js",
+            "max-age=31536000",
+        )
+        is True
+    )
+    assert (
+        result_parser.is_immutable_static_asset(
+            "https://example.com/js/main.a1b2c3d4e5f6.js", "public, max-age=31536000"
+        )
+        is True
+    )
+    assert (
+        result_parser.is_immutable_static_asset(
+            "https://example.com/css/app-9f8e7d6c.css", "max-age=31536000"
+        )
+        is True
+    )
+
+
+def testIsImmutableStaticAsset_whenNotImmutableAsset_shouldReturnFalse() -> None:
+    """Test that dynamic or non-content-hashed responses are not treated as immutable static assets."""
+    # Dynamic, user-specific page cached for a year: the genuine concern, must keep reporting.
+    assert (
+        result_parser.is_immutable_static_asset(
+            "https://pigment.app/account", "max-age=31536000"
+        )
+        is False
+    )
+    # Content-hashed asset but a short-lived cache.
+    assert (
+        result_parser.is_immutable_static_asset(
+            "https://example.com/js/main.a1b2c3d4.js", "max-age=3600"
+        )
+        is False
+    )
+    # Cache directives without a max-age.
+    assert (
+        result_parser.is_immutable_static_asset(
+            "https://example.com/js/main.a1b2c3d4.js", "public"
+        )
+        is False
+    )
+    # Non-content-hashed filename with a long-lived cache.
+    assert (
+        result_parser.is_immutable_static_asset(
+            "https://example.com/js/app.js", "max-age=31536000"
+        )
+        is False
+    )
+    assert result_parser.is_immutable_static_asset(None, "max-age=31536000") is False
+    assert (
+        result_parser.is_immutable_static_asset("https://example.com/app.js", None)
+        is False
+    )
+    assert result_parser.is_immutable_static_asset("", "") is False
+
+
+def testParseResults_whenStorableCacheableImmutableAsset_shouldSuppressImmutableAsset() -> (
+    None
+):
+    """Test that an immutable static asset Storable and Cacheable alert is suppressed while a dynamic one is reported."""
+    with (
+        pathlib.Path(__file__).parent
+        / "zap-storable-cacheable-immutable-asset-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "Storable and Cacheable Content"
+        assert "CypressDebug-D5vcAvqv.js" not in vulnz[0].technical_detail
+        assert "https://pigment.app/account" in vulnz[0].technical_detail
+
+
 def testIsThirdPartyAnalyticsCookie_whenHotjarAnalyticsCookie_shouldReturnTrue() -> (
     None
 ):
