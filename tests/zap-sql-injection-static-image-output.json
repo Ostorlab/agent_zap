@@ -1,0 +1,62 @@
+{
+    "@version": "2.15.0",
+    "@generated": "Thu, 20 Nov 2026 00:00:00",
+    "site": [
+        {
+            "@name": "https://app.fourthfrontier.com",
+            "@host": "app.fourthfrontier.com",
+            "@port": "443",
+            "@ssl": "true",
+            "alerts": [
+                {
+                    "pluginid": "40018",
+                    "alertRef": "40018-1",
+                    "alert": "SQL Injection",
+                    "name": "SQL Injection",
+                    "riskcode": "2",
+                    "confidence": "2",
+                    "riskdesc": "Medium (Medium)",
+                    "desc": "<p>SQL injection may be possible.</p>",
+                    "solution": "<p>Do not trust client input, even if from dropdowns, hidden fields, or tokens. Query parameters are often the only source of the vulnerability, but all user-controlled input must be validated or sanitized.</p>",
+                    "reference": "<p>http://projects.webappsec.org/SQL-Injection</p>",
+                    "cweid": "89",
+                    "wascid": "19",
+                    "instances": [
+                        {
+                            "uri": "https://app.fourthfrontier.com/images/X%20Plus%20Logo.svg?ee5e074320941267d4a74b33d2db68d8=+AND+1%3D1+--+",
+                            "method": "GET",
+                            "param": "ee5e074320941267d4a74b33d2db68d8",
+                            "attack": " OR 1=1 -- ",
+                            "evidence": ""
+                        }
+                    ],
+                    "otherinfo": "The page results were successfully manipulated using the boolean conditions [ AND 1=1 -- ] and [ OR 1=1 -- ]\n\nThe parameter value being modified was stripped from the HTML output for the purposes of the comparison.\n\nData was NOT returned for the original parameter.\n\nThe vulnerability was detected by successfully retrieving more data than originally returned, by manipulating the parameter."
+                },
+                {
+                    "pluginid": "40018",
+                    "alertRef": "40018-1",
+                    "alert": "SQL Injection",
+                    "name": "SQL Injection",
+                    "riskcode": "2",
+                    "confidence": "2",
+                    "riskdesc": "Medium (Medium)",
+                    "desc": "<p>SQL injection may be possible.</p>",
+                    "solution": "<p>Do not trust client input, even if from dropdowns, hidden fields, or tokens. Query parameters are often the only source of the vulnerability, but all user-controlled input must be validated or sanitized.</p>",
+                    "reference": "<p>http://projects.webappsec.org/SQL-Injection</p>",
+                    "cweid": "89",
+                    "wascid": "19",
+                    "instances": [
+                        {
+                            "uri": "https://app.fourthfrontier.com/search?q=+OR+1%3D1+--+",
+                            "method": "GET",
+                            "param": "q",
+                            "attack": " OR 1=1 -- ",
+                            "evidence": "<b>1=1</b>"
+                        }
+                    ],
+                    "otherinfo": "The page results were successfully manipulated using the boolean conditions [ AND 1=1 -- ] and [ OR 1=1 -- ]\n\nThe parameter value being modified was stripped from the HTML output for the purposes of the comparison.\n\nData was NOT returned for the original parameter.\n\nThe vulnerability was detected by successfully retrieving more data than originally returned, by manipulating the parameter."
+                }
+            ]
+        }
+    ]
+}

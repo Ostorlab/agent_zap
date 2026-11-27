@@ -360,3 +360,51 @@ def testParseResults_whenServerBannerVersionless_shouldSuppressVersionLeak() -> 
             == 'Server Leaks Version Information via "Server" HTTP Response Header Field'
         )
         assert "Apache/2.4.1" in vulnz[0].technical_detail
+
+
+def testIsStaticImageAsset_whenStaticImageUri_shouldReturnTrue() -> None:
+    """Test detection of a URI that points at a static image file."""
+    assert (
+        result_parser.is_static_image_asset(
+            "https://app.fourthfrontier.com/images/X%20Plus%20Logo.svg"
+            "?ee5e074320941267d4a74b33d2db68d8=+AND+1%3D1+--+"
+        )
+        is True
+    )
+    assert (
+        result_parser.is_static_image_asset(
+            "https://example.com/images/logo_full_white.png"
+        )
+        is True
+    )
+    assert (
+        result_parser.is_static_image_asset("https://example.com/assets/banner.JPG")
+        is True
+    )
+    assert (
+        result_parser.is_static_image_asset("https://example.com/favicon.ico") is True
+    )
+
+
+def testIsStaticImageAsset_whenDynamicUri_shouldReturnFalse() -> None:
+    """Test that a dynamic endpoint URI is not treated as a static image asset."""
+    assert (
+        result_parser.is_static_image_asset("https://example.com/search?q=1") is False
+    )
+    assert result_parser.is_static_image_asset("https://example.com/login.php") is False
+    assert result_parser.is_static_image_asset("https://example.com/app.js") is False
+    assert result_parser.is_static_image_asset(None) is False
+    assert result_parser.is_static_image_asset("") is False
+
+
+def testParseResults_whenSqlInjectionOnStaticImage_shouldSuppressStaticImage() -> None:
+    """Test that a SQL Injection alert on a static image asset is suppressed while a genuine one is reported."""
+    with (
+        pathlib.Path(__file__).parent / "zap-sql-injection-static-image-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "SQL Injection"
+        assert "X%20Plus%20Logo.svg" not in vulnz[0].technical_detail
+        assert "/search?q=" in vulnz[0].technical_detail

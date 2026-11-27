@@ -5,6 +5,7 @@ import json
 import re
 import time
 from typing import Any
+from urllib.parse import urlparse
 
 from markdownify import markdownify as md
 from ostorlab.agent.kb import kb
@@ -47,6 +48,7 @@ USER_AGENT_FUZZER_TITLE = "User Agent Fuzzer"
 SERVER_VERSION_INFO_LEAK_TITLE = (
     'Server Leaks Version Information via "Server" HTTP Response Header Field'
 )
+SQL_INJECTION_TITLE = "SQL Injection"
 
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
@@ -252,6 +254,33 @@ def is_versionless_server_banner(evidence: str | None) -> bool:
     return _VERSION_TOKEN_PATTERN.search(evidence) is None
 
 
+# ZAP's "SQL Injection" rule (active scanner 40018) injects boolean payloads
+# (e.g. " AND 1=1 -- " / " OR 1=1 -- ") into every query parameter and compares the
+# response length against a baseline. A static image file (an .svg, .png, .jpg, etc.)
+# is served directly by the web server or CDN and runs no SQL, so a response-size
+# variation on such an asset (often caused by an unused cache-busting parameter) is an
+# artifact of the comparison, not evidence of SQL injection.
+_STATIC_IMAGE_EXTENSION_PATTERN = re.compile(
+    r"\.(?:png|jpe?g|gif|svg|webp|bmp|ico|avif)$", re.IGNORECASE
+)
+
+
+def is_static_image_asset(uri: str | None) -> bool:
+    """Whether the alert's URI points at a static image file.
+
+    Args:
+        uri: The raw ``uri`` of the alert instance, as produced by the ZAP rule.
+
+    Returns:
+        True when the URI's path ends in a static image extension (e.g. ``.svg``,
+        ``.png``), False otherwise.
+    """
+    if not uri:
+        return False
+    path = urlparse(uri).path
+    return _STATIC_IMAGE_EXTENSION_PATTERN.search(path) is not None
+
+
 def _build_technical_detail(
     title: str,
     target: str,
@@ -393,6 +422,9 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                     title == SERVER_VERSION_INFO_LEAK_TITLE
                     and is_versionless_server_banner(evidence=evidence)
                 ):
+                    continue
+
+                if title == SQL_INJECTION_TITLE and is_static_image_asset(uri=uri):
                     continue
 
                 technical_detail = _build_technical_detail(
