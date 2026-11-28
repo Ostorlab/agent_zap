@@ -412,3 +412,21 @@ def testParseResults_whenXContentTypeOptionsOnVercelStatic_shouldSuppressStaticA
         assert vulnz[0].entry.title == "X-Content-Type-Options Header Missing"
         assert "https://admin.dynamify.com/" in vulnz[0].technical_detail
         assert "challenge.v2.min.js" not in vulnz[0].technical_detail
+
+
+def testIsVercelSecurityChallengeStaticAsset_whenNestedOrDifferentCasePath_shouldReturnFalse() -> (
+    None
+):
+    """Only the exact Vercel root path identifies a platform challenge asset."""
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://example.com/static/.well-known/vercel/security/static/app.js"
+        )
+        is False
+    )
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://example.com/.WELL-KNOWN/vercel/security/static/app.js"
+        )
+        is False
+    )

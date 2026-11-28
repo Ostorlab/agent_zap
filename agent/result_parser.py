@@ -5,7 +5,7 @@ import json
 import re
 import time
 from typing import Any
-from urllib.parse import urlparse
+from urllib import parse
 
 from markdownify import markdownify as md
 from ostorlab.agent.kb import kb
@@ -261,11 +261,6 @@ def is_versionless_server_banner(evidence: str | None) -> bool:
 # the Vercel platform, the response is a static JavaScript file served with a JavaScript
 # content type, and the anti-MIME-sniffing concern does not apply, so those alerts are
 # false positives.
-_VERCEL_SECURITY_CHALLENGE_PATH_PATTERN = re.compile(
-    r"/\.well-known/vercel/security/static/", re.IGNORECASE
-)
-
-
 def is_vercel_security_challenge_static_asset(uri: str | None) -> bool:
     """Whether the alert's URI is a Vercel platform security-challenge static asset.
 
@@ -276,11 +271,9 @@ def is_vercel_security_challenge_static_asset(uri: str | None) -> bool:
         True when the URI path is under Vercel's "/.well-known/vercel/security/static/"
         security-challenge path, False otherwise.
     """
-    if not uri:
+    if uri is None or uri == "":
         return False
-    return (
-        _VERCEL_SECURITY_CHALLENGE_PATH_PATTERN.search(urlparse(uri).path) is not None
-    )
+    return parse.urlparse(uri).path.startswith("/.well-known/vercel/security/static/")
 
 
 def _build_technical_detail(
