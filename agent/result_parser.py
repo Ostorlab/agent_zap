@@ -44,6 +44,7 @@ COOKIE_SLACK_DETECTOR_TITLE = "Cookie Slack Detector"
 PROXY_DISCLOSURE_TITLE = "Proxy Disclosure"
 TIMESTAMP_DISCLOSURE_UNIX_TITLE = "Timestamp Disclosure - Unix"
 USER_AGENT_FUZZER_TITLE = "User Agent Fuzzer"
+INTEGER_OVERFLOW_TITLE = "Integer Overflow Error"
 SERVER_VERSION_INFO_LEAK_TITLE = (
     'Server Leaks Version Information via "Server" HTTP Response Header Field'
 )
@@ -252,6 +253,32 @@ def is_versionless_server_banner(evidence: str | None) -> bool:
     return _VERSION_TOKEN_PATTERN.search(evidence) is None
 
 
+# ZAP's "Integer Overflow Error" rule (active scanner 30003, IntegerOverflowScanRule)
+# injects oversized integer payloads into each parameter and raises the alert whenever the
+# server responds with HTTP 500. The rule conflates "the server errored on a big number
+# input" with integer arithmetic overflow: an HTTP 500 on oversized input is a generic
+# server error (input validation, an unhandled exception, rate limiting, ...) and does not
+# demonstrate any overflow, parser or crash detail. The alert evidence is the HTTP response
+# status line (e.g. "HTTP/1.1 500 Internal Server Error"), which is exactly what marks
+# these alerts as false positives.
+_HTTP_500_STATUS_PATTERN = re.compile(r"^HTTP/\d+(?:\.\d+)?\s+500\b", re.IGNORECASE)
+
+
+def is_http_500_response(evidence: str | None) -> bool:
+    """Whether the alert's evidence is an HTTP 500 (server error) response status line.
+
+    Args:
+        evidence: The raw ``evidence`` of the alert instance, i.e. the HTTP response status line.
+
+    Returns:
+        True when the evidence is an ``HTTP/1.x 500 ...`` / ``HTTP/2 500 ...`` status line,
+        False otherwise.
+    """
+    if not evidence:
+        return False
+    return _HTTP_500_STATUS_PATTERN.match(evidence) is not None
+
+
 def _build_technical_detail(
     title: str,
     target: str,
@@ -392,6 +419,11 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                 if (
                     title == SERVER_VERSION_INFO_LEAK_TITLE
                     and is_versionless_server_banner(evidence=evidence)
+                ):
+                    continue
+
+                if title == INTEGER_OVERFLOW_TITLE and is_http_500_response(
+                    evidence=evidence
                 ):
                     continue
 

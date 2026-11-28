@@ -360,3 +360,37 @@ def testParseResults_whenServerBannerVersionless_shouldSuppressVersionLeak() -> 
             == 'Server Leaks Version Information via "Server" HTTP Response Header Field'
         )
         assert "Apache/2.4.1" in vulnz[0].technical_detail
+
+
+def testIsHttp500Response_when500StatusLine_shouldReturnTrue() -> None:
+    """Test detection of an HTTP 500 server-error response status line in the alert evidence."""
+    assert (
+        result_parser.is_http_500_response("HTTP/1.1 500 Internal Server Error") is True
+    )
+    assert result_parser.is_http_500_response("HTTP/1.0 500 Server Error") is True
+    assert (
+        result_parser.is_http_500_response("HTTP/2 500 Internal Server Error") is True
+    )
+
+
+def testIsHttp500Response_whenOtherStatus_shouldReturnFalse() -> None:
+    """Test that non-500 evidence is not treated as a server-error response status line."""
+    assert result_parser.is_http_500_response("HTTP/1.1 200 OK") is False
+    assert result_parser.is_http_500_response("HTTP/1.1 429 Too Many Requests") is False
+    assert result_parser.is_http_500_response("no-store") is False
+    assert result_parser.is_http_500_response("500") is False
+    assert result_parser.is_http_500_response("") is False
+    assert result_parser.is_http_500_response(None) is False
+
+
+def testParseResults_whenIntegerOverflowHttp500_shouldSuppressServerErrors() -> None:
+    """Test that an Integer Overflow Error alert on an HTTP 500 response is suppressed while a non-500 one is reported."""
+    with (pathlib.Path(__file__).parent / "zap-integer-overflow-500-output.json").open(
+        "r", encoding="utf-8"
+    ) as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "Integer Overflow Error"
+        assert "HTTP/1.1 200 OK" in vulnz[0].technical_detail
+        assert "HTTP/1.1 500 Internal Server Error" not in vulnz[0].technical_detail
