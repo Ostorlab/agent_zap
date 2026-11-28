@@ -1,0 +1,62 @@
+{
+  "@version": "2.15.0",
+  "@generated": "Sat, 28 Nov 2026 00:00:00",
+  "site": [
+    {
+      "@name": "https://10fastfingers.com",
+      "@host": "10fastfingers.com",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        {
+          "pluginid": "30003",
+          "alertRef": "30003",
+          "alert": "Integer Overflow Error",
+          "name": "Integer Overflow Error",
+          "riskcode": "2",
+          "confidence": "2",
+          "riskdesc": "Medium (Medium)",
+          "desc": "<p>An integer overflow condition exists when an integer used in a compiled program extends beyond the range limits and has not been properly checked from the input stream.</p>",
+          "solution": "<p>Ensure that the application is compiled with built-in overflow checking.</p>",
+          "reference": "<p>https://cwe.mitre.org/data/definitions/190.html</p>",
+          "cweid": "190",
+          "wascid": "3",
+          "instances": [
+            {
+              "uri": "https://10fastfingers.com/typing-test/hindi",
+              "method": "POST",
+              "param": "",
+              "attack": "11111111111111111111111111111111111111111111",
+              "evidence": "HTTP/1.1 500 Internal Server Error"
+            }
+          ],
+          "otherinfo": "Potential Integer Overflow. Status code changed on the input of a long string of ones."
+        },
+        {
+          "pluginid": "30003",
+          "alertRef": "30003",
+          "alert": "Integer Overflow Error",
+          "name": "Integer Overflow Error",
+          "riskcode": "2",
+          "confidence": "2",
+          "riskdesc": "Medium (Medium)",
+          "desc": "<p>An integer overflow condition exists when an integer used in a compiled program extends beyond the range limits and has not been properly checked from the input stream.</p>",
+          "solution": "<p>Ensure that the application is compiled with built-in overflow checking.</p>",
+          "reference": "<p>https://cwe.mitre.org/data/definitions/190.html</p>",
+          "cweid": "190",
+          "wascid": "3",
+          "instances": [
+            {
+              "uri": "https://10fastfingers.com/typing-test/hindi",
+              "method": "POST",
+              "param": "",
+              "attack": "99999999999999999999999999999999999999999999",
+              "evidence": "HTTP/1.1 200 OK"
+            }
+          ],
+          "otherinfo": "Potential Integer Overflow. Status code changed on the input of a long string of nines."
+        }
+      ]
+    }
+  ]
+}
