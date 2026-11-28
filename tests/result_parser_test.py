@@ -362,6 +362,76 @@ def testParseResults_whenServerBannerVersionless_shouldSuppressVersionLeak() -> 
         assert "Apache/2.4.1" in vulnz[0].technical_detail
 
 
+def testIsVercelSecurityChallengeStaticAsset_whenChallengePath_shouldReturnTrue() -> (
+    None
+):
+    """Test detection of a Vercel platform security-challenge static asset path."""
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://admin.dynamify.com/.well-known/vercel/security/static/challenge.v2.min.js"
+        )
+        is True
+    )
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://admin.dynamify.com/.well-known/vercel/security/static/challenge.v2.js"
+        )
+        is True
+    )
+
+
+def testIsVercelSecurityChallengeStaticAsset_whenOtherPath_shouldReturnFalse() -> None:
+    """Test that a genuine application page is not treated as a Vercel security-challenge static asset."""
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://admin.dynamify.com/"
+        )
+        is False
+    )
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://admin.dynamify.com/dashboard"
+        )
+        is False
+    )
+    assert result_parser.is_vercel_security_challenge_static_asset(None) is False
+    assert result_parser.is_vercel_security_challenge_static_asset("") is False
+
+
+def testParseResults_whenXContentTypeOptionsOnVercelStatic_shouldSuppressStaticAsset() -> (
+    None
+):
+    """Test that an X-Content-Type-Options alert on a Vercel security-challenge static asset is suppressed while a genuine page is reported."""
+    with (
+        pathlib.Path(__file__).parent
+        / "zap-x-content-type-options-vercel-static-output.json"
+    ).open("r", encoding="utf-8") as o:
+        results = json.load(o)
+        vulnz = list(result_parser.parse_results(results))
+        assert len(vulnz) == 1
+        assert vulnz[0].entry.title == "X-Content-Type-Options Header Missing"
+        assert "https://admin.dynamify.com/" in vulnz[0].technical_detail
+        assert "challenge.v2.min.js" not in vulnz[0].technical_detail
+
+
+def testIsVercelSecurityChallengeStaticAsset_whenNestedOrDifferentCasePath_shouldReturnFalse() -> (
+    None
+):
+    """Only the exact Vercel root path identifies a platform challenge asset."""
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://example.com/static/.well-known/vercel/security/static/app.js"
+        )
+        is False
+    )
+    assert (
+        result_parser.is_vercel_security_challenge_static_asset(
+            "https://example.com/.WELL-KNOWN/vercel/security/static/app.js"
+        )
+        is False
+    )
+
+
 def testIsHttp500Response_when500StatusLine_shouldReturnTrue() -> None:
     """Test detection of an HTTP 500 server-error response status line in the alert evidence."""
     assert (
