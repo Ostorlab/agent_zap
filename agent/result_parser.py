@@ -5,6 +5,7 @@ import json
 import re
 import time
 from typing import Any
+from urllib.parse import urlparse
 
 from markdownify import markdownify as md
 from ostorlab.agent.kb import kb
@@ -47,6 +48,7 @@ USER_AGENT_FUZZER_TITLE = "User Agent Fuzzer"
 SERVER_VERSION_INFO_LEAK_TITLE = (
     'Server Leaks Version Information via "Server" HTTP Response Header Field'
 )
+X_CONTENT_TYPE_OPTIONS_MISSING_TITLE = "X-Content-Type-Options Header Missing"
 
 # ZAP's "Relative Path Confusion" rule (active scanner 10051) appends a random path
 # to the scanned URL and raises an alert when the response contains relative resource
@@ -252,6 +254,35 @@ def is_versionless_server_banner(evidence: str | None) -> bool:
     return _VERSION_TOKEN_PATTERN.search(evidence) is None
 
 
+# ZAP's "X-Content-Type-Options Header Missing" rule (passive scanner 10021) flags any
+# response that lacks the "X-Content-Type-Options: nosniff" header. The
+# "/.well-known/vercel/security/static/" path serves Vercel's platform security-challenge
+# static assets (e.g. "challenge.v2.min.js"): the header behaviour there is controlled by
+# the Vercel platform, the response is a static JavaScript file served with a JavaScript
+# content type, and the anti-MIME-sniffing concern does not apply, so those alerts are
+# false positives.
+_VERCEL_SECURITY_CHALLENGE_PATH_PATTERN = re.compile(
+    r"/\.well-known/vercel/security/static/", re.IGNORECASE
+)
+
+
+def is_vercel_security_challenge_static_asset(uri: str | None) -> bool:
+    """Whether the alert's URI is a Vercel platform security-challenge static asset.
+
+    Args:
+        uri: The raw ``uri`` of the alert instance, as produced by the ZAP rule.
+
+    Returns:
+        True when the URI path is under Vercel's "/.well-known/vercel/security/static/"
+        security-challenge path, False otherwise.
+    """
+    if not uri:
+        return False
+    return (
+        _VERCEL_SECURITY_CHALLENGE_PATH_PATTERN.search(urlparse(uri).path) is not None
+    )
+
+
 def _build_technical_detail(
     title: str,
     target: str,
@@ -392,6 +423,12 @@ def parse_results(results: dict[str, Any], scope_urls_regex: str | None = None):
                 if (
                     title == SERVER_VERSION_INFO_LEAK_TITLE
                     and is_versionless_server_banner(evidence=evidence)
+                ):
+                    continue
+
+                if (
+                    title == X_CONTENT_TYPE_OPTIONS_MISSING_TITLE
+                    and is_vercel_security_challenge_static_asset(uri=uri)
                 ):
                     continue
 
